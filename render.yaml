@@ -10,6 +10,8 @@ services:
     envVars:
       - key: HF_TOKEN
         sync: false
+      - key: MEDGEMMA_MODEL
+        value: google/medgemma-1.5-4b-it
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION

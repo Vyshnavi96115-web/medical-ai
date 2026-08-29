@@ -26,15 +26,17 @@ class MedGemmaAnalyzer:
     """Service interface for official MedGemma multimodal healthcare AI model."""
 
     def __init__(self):
-        print("[MEDGEMMA] Model loading...")
         self.hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
-        self.model_name = os.getenv("MEDGEMMA_MODEL", "google/gemma-3-4b-it")
+        self.model_name = os.getenv("MEDGEMMA_MODEL", "google/medgemma-1.5-4b-it")
+        self.endpoint_url = os.getenv("MEDGEMMA_ENDPOINT_URL", "https://router.huggingface.co/v1/chat/completions")
         self.report_processor = MedicalReportProcessor()
 
+        print(f"[MEDGEMMA] Model: {self.model_name}")
         if self.hf_token:
-            print(f"[MEDGEMMA] Model loaded. Hugging Face Multimodal API active (Model: {self.model_name}).")
+            print(f"[MEDGEMMA] Hugging Face Multimodal API active (Model: {self.model_name}).")
         else:
             print("[MEDGEMMA] Notice: HF_TOKEN not found in environment.")
+
 
     def verify_image_integrity(self, decrypted_file_path, original_file_path=None):
         """
@@ -81,7 +83,7 @@ class MedGemmaAnalyzer:
             original_file_path (str): Optional path to original file for SHA-256 verification
 
         Returns dict:
-            Structured medical analysis object containing Stage 1 info & 9 Stage 2 fields
+            Structured medical analysis object containing Stage 1 info & Stage 2 fields
         """
         if isinstance(stage1_info, str):
             stage1_info = {
@@ -127,8 +129,7 @@ class MedGemmaAnalyzer:
 
     def _run_multimodal_inference(self, pil_image, stage1_info, additional_text=""):
         """Executes real multimodal image + prompt inference via MedGemma model API."""
-        print(f"[MEDGEMMA] Sending image + prompt to MedGemma")
-        print(f"[MEDGEMMA] Generation started")
+        print(f"[MEDGEMMA] Sending image to MedGemma")
 
         buf = io.BytesIO()
         pil_image.save(buf, format="JPEG")
@@ -140,7 +141,8 @@ class MedGemmaAnalyzer:
         if additional_text:
             prompt = f"Decrypted Medical Report Text Content:\n{additional_text[:1000]}\n\n" + prompt
 
-        url = "https://router.huggingface.co/v1/chat/completions"
+        url = self.endpoint_url
+
         headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
 
         payload = {
@@ -160,53 +162,20 @@ class MedGemmaAnalyzer:
 
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=45)
-            print(f"[MEDGEMMA] Generation completed")
 
             if resp.status_code == 200:
+                print(f"[MEDGEMMA] Response received")
                 raw_text = resp.json()["choices"][0]["message"]["content"]
-                print(f"[MEDGEMMA] Response decoded")
                 parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                print(f"[MEDGEMMA] Response displayed")
+                print(f"[MEDGEMMA] Analysis completed")
                 return parsed
             else:
-                print(f"[MEDGEMMA] API Endpoint note ({resp.status_code}): {resp.text[:200]}")
-                return self._run_secondary_inference(data_uri, prompt, stage1_info=stage1_info)
+                print(f"[MEDGEMMA] Inference request status {resp.status_code}: {resp.text[:200]}")
+                return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
         except Exception as err:
             print(f"[MEDGEMMA] Inference execution notice: {err}")
-            return self._run_secondary_inference(data_uri, prompt, stage1_info=stage1_info)
+            return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
 
-    def _run_secondary_inference(self, data_uri, prompt, stage1_info=None):
-        """Secondary endpoint fallback using Hugging Face router."""
-        url = "https://router.huggingface.co/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
-
-        payload = {
-            "model": "google/gemma-3-4b-it",
-            "messages": [
-                {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": data_uri}}
-                    ]
-                }
-            ],
-            "max_tokens": 800
-        }
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=30)
-            print(f"[MEDGEMMA] Generation completed (via MedGemma engine)")
-            if resp.status_code == 200:
-                raw_text = resp.json()["choices"][0]["message"]["content"]
-                print(f"[MEDGEMMA] Response decoded")
-                parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                print(f"[MEDGEMMA] Response displayed")
-                return parsed
-        except Exception as e:
-            print(f"[MEDGEMMA] Secondary engine notice: {e}")
-
-        return self._generate_error_response("MedGemma multimodal inference is currently unavailable.", stage1_info)
 
     def _run_text_report_inference(self, report_text, stage1_info=None):
         """Executes text-only report analysis when PDF rendering is unavailable."""

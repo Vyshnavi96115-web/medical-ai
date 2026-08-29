@@ -3,15 +3,17 @@
    Scoped strictly to .cloud-page.hc-exact-redesign
    ========================================================== */
 
+main.main-content.cloud-page.hc-exact-redesign,
 .cloud-page.hc-exact-redesign {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: #0f172a;
     background-color: #f8fafc;
-    padding: 30px 40px;
-    margin-left: 260px;
-    width: calc(100% - 260px);
-    box-sizing: border-box;
+    padding: 30px 40px !important;
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    box-sizing: border-box !important;
 }
+
 
 
 /* ================= TOP HEADER ================= */

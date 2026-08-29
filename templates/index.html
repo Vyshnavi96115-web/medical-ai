@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>QuantumShield-Med</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="app-container">
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar">
+
+        <div class="logo-area">
+
+            <div class="logo">
+                Q
+            </div>
+
+            <div class="logo-text">
+
+                <h2>QuantumShield</h2>
+
+                <span>MED</span>
+
+            </div>
+
+        </div>
+
+
+        <div class="menu-title">
+            MAIN MENU
+        </div>
+
+
+        <button class="nav-item active">
+            🏠 &nbsp; Dashboard
+        </button>
+
+
+        <a
+        href="{{ url_for('medical_imaging') }}"
+        class="nav-item"
+>
+            🩻 &nbsp; Medical Imaging
+        </a>
+
+        <a href="{{ url_for('patient_monitoring') }}" class="nav-item">
+            ❤️ &nbsp; Patient Monitoring
+        </a>
+
+
+        <a href="{{ url_for('hospital_sharing') }}" class="nav-item">
+            🏥 &nbsp; Hospital Sharing
+        </a>
+
+
+        <a href="{{ url_for('emergency_care') }}" class="nav-item">
+            🚑 &nbsp; Emergency Care
+        </a>
+
+
+        <a href="{{ url_for('healthcare_cloud') }}" class="nav-item">
+            ☁️ &nbsp; Healthcare Cloud
+        </a>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="status">
+
+                <span class="status-dot"></span>
+
+                BB84 Quantum Engine Ready
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+
+        <!-- HEADER -->
+
+        <header class="top-header">
+
+            <div>
+
+                <div class="page-label">
+                    QUANTUM-SECURED HEALTHCARE
+                </div>
+
+                <h1>
+                    Healthcare Security Dashboard
+                </h1>
+
+            </div>
+
+
+            <div class="security-badge">
+
+                ● BB84 QBER MONITOR
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= HERO ================= -->
+
+        <section class="hero">
+
+
+            <div class="hero-text">
+
+                <div class="page-label">
+                    QUANTUMSHIELD-MED
+                </div>
+
+
+                <h2>
+
+                    Protect sensitive healthcare
+                    data before it reaches
+                    the network.
+
+                </h2>
+
+
+                <p>
+
+                    A BB84-based quantum key
+                    distribution simulation for
+                    secure healthcare communication,
+                    QBER monitoring and
+                    eavesdropping detection.
+
+                </p>
+
+
+                <p>
+                    Five healthcare applications share one BB84 security model
+                    for protected medical data, monitoring, hospital sharing,
+                    emergency care, and encrypted cloud storage.
+                </p>
+
+            </div>
+
+
+            <div class="quantum-graphic">
+
+                <div class="quantum-ring ring-one"></div>
+
+                <div class="quantum-ring ring-two"></div>
+
+                <div class="quantum-core">
+                    Q
+                </div>
+
+            </div>
+
+        </section>
+        <!-- ================= QUANTUM CARE NETWORK ================= -->
+
+        <section class="quantum-network">
+
+            <div class="network-intro">
+                <div class="page-label">ONE MODEL / FIVE APPLICATIONS</div>
+                <h2>One quantum core for connected care</h2>
+                <p>Every healthcare workflow meets the same BB84 protection layer before sensitive data moves.</p>
+            </div>
+
+            <div class="network-map">
+                <div class="network-core">
+                    <span class="network-core-mark">Q</span>
+                    <strong>BB84</strong>
+                    <small>QUANTUM CORE</small>
+                </div>
+
+                <div class="network-node node-imaging">
+                    <span>🩻</span>
+                    <strong>Imaging</strong>
+                </div>
+                <div class="network-node node-monitoring">
+                    <span>❤️</span>
+                    <strong>Monitoring</strong>
+                </div>
+                <div class="network-node node-sharing">
+                    <span>🏥</span>
+                    <strong>Sharing</strong>
+                </div>
+                <div class="network-node node-emergency">
+                    <span>🚑</span>
+                    <strong>Emergency</strong>
+                </div>
+                <div class="network-node node-cloud">
+                    <span>☁️</span>
+                    <strong>Cloud</strong>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= MODULES ================= -->
+
+        <div class="section-header">
+
+            <h2>
+                Five Integrated Medical Applications
+            </h2>
+
+            <span>
+                One BB84 security layer
+            </span>
+
+        </div>
+
+
+        <section class="modules-grid">
+
+
+            <!-- 1 -->
+
+            <a href="{{ url_for('medical_imaging') }}" class="module-card module-link">
+
+                <div class="module-number">
+                    01
+                </div>
+
+                <div class="module-icon">
+                    🩻
+                </div>
+
+                <h3>
+                    Medical Imaging
+                </h3>
+
+                <p>
+                    Secure X-ray, MRI, CT
+                    and ultrasound files.
+                </p>
+
+            </a>
+
+
+            <!-- 2 -->
+
+            <a href="{{ url_for('patient_monitoring') }}" class="module-card module-link">
+
+                <div class="module-number">
+                    02
+                </div>
+
+                <div class="module-icon">
+                    ❤️
+                </div>
+
+                <h3>
+                    Patient Monitoring
+                </h3>
+
+                <p>
+                    Protect simulated ECG
+                    and vital-sign streams.
+                </p>
+
+            </a>
+
+
+            <!-- 3 -->
+
+            <a href="{{ url_for('hospital_sharing') }}" class="module-card module-link">
+
+                <div class="module-number">
+                    03
+                </div>
+
+                <div class="module-icon">
+                    🏥
+                </div>
+
+                <h3>
+                    Hospital Sharing
+                </h3>
+
+                <p>
+                    Secure reports between
+                    authorized hospitals.
+                </p>
+
+            </a>
+
+
+            <!-- 4 -->
+
+            <a href="{{ url_for('emergency_care') }}" class="module-card module-link">
+
+                <div class="module-number">
+                    04
+                </div>
+
+                <div class="module-icon">
+                    🚑
+                </div>
+
+                <h3>
+                    Emergency Care
+                </h3>
+
+                <p>
+                    Secure ambulance-to-hospital
+                    patient transmission.
+                </p>
+
+            </a>
+
+
+            <!-- 5 -->
+
+            <div class="module-card">
+
+                <div class="module-number">
+                    05
+                </div>
+
+                <div class="module-icon">
+                    ☁️
+                </div>
+
+                <h3>
+                    Healthcare Cloud
+                </h3>
+
+                <p>
+                    Store encrypted medical
+                    objects securely.
+                </p>
+
+            </div>
+
+
+        </section>
+
+
+    </main>
+
+</div>
+<script
+    src="{{ url_for('static', filename='js/dashboard.js') }}">
+</script>
+
+
+</body>
+
+</html>

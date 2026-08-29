@@ -1,0 +1,32 @@
+# Environment & Secrets
+.env
+*.env
+*.pem
+*.key
+
+# Python Virtual Environments & Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.venv-*/
+venv/
+env/
+
+# Patient Medical Files & Temporary Uploads
+uploads/*
+!uploads/.gitkeep
+test_assets/
+test_general_payloads/
+test_payloads/
+*.enc
+*.decrypted.*
+*_corrupted.*
+*_preview.*
+
+# Logs & OS Specific Files
+*.log
+.DS_Store
+.vscode/
+.idea/

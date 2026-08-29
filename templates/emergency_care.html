@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Care | QuantumShield-MED</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medical.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/emergency_care.css') }}">
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo-area"><div class="logo">Q</div><div class="logo-text"><h2>QuantumShield</h2><span>MED</span></div></div>
+        <div class="menu-title">MAIN MENU</div>
+        <a href="/" class="nav-item">🏠 &nbsp; Dashboard</a>
+        <a href="/medical-imaging" class="nav-item">🩻 &nbsp; Medical Imaging</a>
+        <a href="/patient-monitoring" class="nav-item">❤️ &nbsp; Patient Monitoring</a>
+        <a href="/hospital-sharing" class="nav-item">🏥 &nbsp; Hospital Sharing</a>
+        <a href="/emergency-care" class="nav-item active">🚑 &nbsp; Emergency Care</a>
+        <a href="/healthcare-cloud" class="nav-item">☁️ &nbsp; Healthcare Cloud</a>
+        <div class="sidebar-bottom"><div class="status"><span class="status-dot"></span>BB84 Quantum Engine Ready</div></div>
+    </aside>
+    <main class="main-content emergency-page">
+        <header class="top-header"><div><div class="page-label">MEDICAL APPLICATION 04</div><h1>Emergency Care</h1><p class="page-subtitle">Rapid secure emergency transmission</p></div><div class="security-badge">● QUANTUM PROTECTED</div></header>
+        <nav class="emergency-workflow" aria-label="Emergency Care stages">
+            <button class="emergency-step active" data-stage="data"><span>01</span><strong>EMERGENCY DATA</strong><small>● Active</small></button>
+            <button class="emergency-step locked" data-stage="security"><span>02</span><strong>BB84 + ENCRYPTION</strong><small>🔒 Locked</small></button>
+            <button class="emergency-step locked" data-stage="decrypt"><span>03</span><strong>EMERGENCY DECRYPTION</strong><small>🔒 Locked</small></button>
+        </nav>
+        <div id="workflow-message" class="emergency-message" hidden></div>
+        <section class="emergency-stage stage-data stage-visible"><div class="emergency-card"><div class="card-label">STEP 01 · EMERGENCY DATA</div><h2>Emergency Patient Information</h2><p class="page-subtitle">Prepare Critical Medical Data for Secure Transmission</p><div class="direction-strip"><strong>SENDER: Emergency Department / Hospital A</strong><span>↓ BB84 QUANTUM SECURITY ↓ ENCRYPTION ↓ SECURE EMERGENCY CHANNEL ↓</span><strong>RECEIVER: Emergency Department / Hospital B</strong></div><div class="form-grid"><label>Patient Name<input id="patient-name" value="Demo Patient"></label><label>Patient ID<input id="patient-id" value="EMERGENCY-001"></label><label>Age<input id="age" type="number" value="45" min="0"></label><label>Emergency Priority<select id="priority"><option value="CRITICAL">CRITICAL</option><option value="HIGH">HIGH</option><option value="MEDIUM">MEDIUM</option></select></label><label>Emergency Condition<input id="emergency-condition" value="Acute respiratory distress"></label><label>Chief Complaint<input id="chief-complaint" value="Shortness of breath"></label><label>Diagnosis / Suspected Diagnosis<input id="diagnosis" value="Pneumonia suspected"></label><label>Treatment Given<input id="treatment" value="Oxygen support initiated"></label><label>Medication / Emergency Medication<input id="medication" value="Emergency antibiotic therapy"></label><label>Doctor / Emergency Physician<input id="doctor" value="Dr. Kumar"></label><label class="full-field">Emergency Summary<textarea id="emergency-summary">Synthetic emergency record prepared for secure demonstration.</textarea></label></div><h3 class="section-title">Emergency Vitals</h3><div class="form-grid vitals-grid"><label>Heart Rate<input id="heart-rate" value="110"></label><label>SpO₂<input id="spo2" value="91"></label><label>Blood Pressure<input id="blood-pressure" value="145/92"></label><label>Temperature<input id="temperature" value="38.2"></label><label>Respiration Rate<input id="respiration-rate" value="24"></label></div><label class="image-input">Medical Image Upload <small>(optional)</small><input id="medical-image" type="file" accept="image/*"></label><button id="prepare-button" class="medical-button">🚨 PREPARE EMERGENCY DATA</button><div id="prepare-error" class="emergency-message error" hidden></div></div></section>
+        <section class="emergency-stage stage-security"><div class="emergency-card"><div class="card-label">STEP 02 · BB84 + ENCRYPTION</div><h2>Quantum-Secured Emergency Transmission</h2><div class="security-toolbar"><label><input id="eve-checkbox" type="checkbox"> Simulate Eve Attack</label><button id="secure-button" class="medical-button">🔐 ENCRYPT &amp; GENERATE BB84 KEY</button></div><div id="security-message" class="emergency-message" hidden></div><div id="bb84-details" class="bb84-grid" hidden><article class="bb84-card"><h3>ALICE</h3><b>Bits</b><pre id="alice-bits"></pre><b>Bases</b><pre id="alice-bases"></pre></article><article class="bb84-card"><h3>BOB</h3><b>Bases</b><pre id="bob-bases"></pre><b>Measured Bits</b><pre id="bob-bits"></pre></article><article class="bb84-card eve-card"><h3>EVE</h3><b id="eve-status">INACTIVE</b><pre id="eve-bases">No interception performed.</pre><pre id="eve-bits"></pre></article><article class="bb84-card wide-card"><h3>KEY SIFTING &amp; BASIS COMPARISON</h3><p>Matching bases are kept. Non-matching bases are discarded.</p><pre id="matching-positions"></pre><div class="stat-row"><span>Total <strong id="total-bits"></strong></span><span>Matching <strong id="matching-bits"></strong></span><span>Discarded <strong id="discarded-bits"></strong></span><span>Sifted <strong id="sifted-length"></strong></span></div><pre id="sifted-key"></pre></article><article class="bb84-card"><h3>QBER SECURITY CHECK</h3><div class="stat-stack"><span>QBER <strong id="qber"></strong></span><span>Security <strong id="security-status-value"></strong></span><span>Channel <strong id="channel-status"></strong></span></div><strong id="qber-decision"></strong></article><article class="bb84-card wide-card"><h3>QUANTUM SESSION KEY</h3><b id="key-length"></b><pre id="quantum-key"></pre><button id="copy-key" class="medical-button">📋 COPY QUANTUM KEY</button><p id="encryption-status"></p></article></div></div></section>
+        <section class="emergency-stage stage-decrypt"><div class="emergency-card receiver-card"><div class="card-label">STEP 03 · EMERGENCY DECRYPTION</div><h2>Emergency Data — Receiving Department</h2><p class="page-subtitle">Receiving Emergency Department / Hospital B</p><label for="receiver-key">Enter Quantum Key</label><input id="receiver-key" autocomplete="off" spellcheck="false" placeholder="Enter the quantum key"><button id="decrypt-button" class="medical-button">🔓 DECRYPT EMERGENCY DATA</button><div id="decrypt-message" class="emergency-message" hidden></div><article id="record-output" class="record-output" hidden><h3 id="output-title">DECRYPTED EMERGENCY RECORD</h3><p id="output-warning"></p><dl id="output-fields"></dl></article></div></section>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/emergency_care.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const card = document.querySelector(".stage-data .emergency-card");
+    const securityCard = document.querySelector(".stage-security .emergency-card");
+    const receiverCard = document.querySelector(".stage-decrypt .receiver-card");
+    const api = async (url, options = {}) => { const response = await fetch(url, options); const result = await response.json(); if (!response.ok && !result.compromised) throw new Error(result.message || "Request failed."); return result; };
+    const values = (prefix, packet) => { const dataKey = `live${prefix.charAt(0).toUpperCase()}${prefix.slice(1)}`; document.querySelectorAll(`[data-live-${prefix}]`).forEach((element) => { element.textContent = packet[element.dataset[dataKey]]; }); };
+    const ambulancePanel = document.createElement("section"); ambulancePanel.className = "ambulance-live-panel"; ambulancePanel.innerHTML = '<div class="card-label">🚑 AMBULANCE LIVE PATIENT MONITORING</div><div class="ambulance-status" id="ambulance-status">MONITORING STOPPED</div><div class="ambulance-vitals"><div><span>❤️ Heart Rate</span><strong data-live-ambulance="heart_rate">--</strong><small>BPM</small></div><div><span>🫁 SpO₂</span><strong data-live-ambulance="spo2">--</strong><small>%</small></div><div><span>🩺 Blood Pressure</span><strong data-live-ambulance="blood_pressure">--</strong><small>mmHg</small></div><div><span>🌡 Temperature</span><strong data-live-ambulance="temperature">--</strong><small>°C</small></div><div><span>🫁 Respiration Rate</span><strong data-live-ambulance="respiration_rate">--</strong><small>breaths/min</small></div></div><p class="simulation-copy">SOFTWARE SIMULATION — These vital signs are simulated and are not clinical measurements.</p><button id="start-ambulance" class="medical-button">▶ START AMBULANCE MONITORING</button><button id="stop-ambulance" class="medical-button secondary-button" disabled>■ STOP MONITORING</button>'; card.append(ambulancePanel);
+    const transmissionPanel = document.createElement("div"); transmissionPanel.className = "transmission-panel"; transmissionPanel.innerHTML = '<div class="card-label">🚑 AMBULANCE → 🏥 HOSPITAL</div><div class="transmission-flow">🚑 AMBULANCE <span>│ 🔐 ENCRYPTED │ ↓ ⚛ BB84 CHANNEL ↓ │</span> 🏥 RECEIVING HOSPITAL</div><div id="transmission-status">TRANSMISSION STOPPED</div><div class="stat-row"><span>Packets Sent <strong id="packets-sent">0</strong></span><span>Last Packet <strong id="last-packet">--</strong></span><span>Encryption <strong id="transmission-encryption">WAITING</strong></span><span>Quantum Channel <strong id="transmission-channel">WAITING</strong></span></div><button id="start-secure-transmission" class="medical-button" disabled>🔐 START SECURE LIVE TRANSMISSION</button>'; securityCard.append(transmissionPanel);
+    const receiverPanel = document.createElement("div"); receiverPanel.className = "receiver-live-panel"; receiverPanel.innerHTML = '<div class="card-label">🏥 RECEIVING HOSPITAL · LIVE EMERGENCY DATA</div><div id="receiver-live-status">WAITING FOR DECRYPTION</div><div class="ambulance-vitals"><div><span>❤️ Heart Rate</span><strong data-live-receiver="heart_rate">--</strong><small>BPM</small></div><div><span>🫁 SpO₂</span><strong data-live-receiver="spo2">--</strong><small>%</small></div><div><span>🩺 Blood Pressure</span><strong data-live-receiver="blood_pressure">--</strong><small>mmHg</small></div><div><span>🌡 Temperature</span><strong data-live-receiver="temperature">--</strong><small>°C</small></div><div><span>🫁 Respiration Rate</span><strong data-live-receiver="respiration_rate">--</strong><small>breaths/min</small></div></div><p>Last Updated: <strong id="receiver-last-updated">--</strong></p>'; receiverCard.append(receiverPanel);
+    let ambulanceTimer = null; let receiverTimer = null; let monitoring = false; let secureTransmission = false;
+    const updateAmbulance = (vitals) => { values("ambulance", vitals); };
+    const updateStatus = (result) => { document.getElementById("packets-sent").textContent = result.packets_sent; document.getElementById("last-packet").textContent = result.last_packet_timestamp ? new Date(result.last_packet_timestamp * 1000).toLocaleTimeString() : "--"; };
+    const tickAmbulance = async () => { try { const result = await api("/api/emergency-care/ambulance/vitals"); updateAmbulance(result.vitals); updateStatus(result); } catch (error) { clearInterval(ambulanceTimer); } };
+    document.getElementById("start-ambulance").addEventListener("click", async () => { try { const result = await api("/api/emergency-care/ambulance/start", { method: "POST" }); monitoring = true; updateAmbulance(result.vitals); document.getElementById("ambulance-status").textContent = "● LIVE — AMBULANCE MONITORING"; document.getElementById("start-ambulance").disabled = true; document.getElementById("stop-ambulance").disabled = false; clearInterval(ambulanceTimer); ambulanceTimer = setInterval(tickAmbulance, 1000); } catch (error) { document.getElementById("ambulance-status").textContent = error.message; } });
+    document.getElementById("stop-ambulance").addEventListener("click", async () => { await api("/api/emergency-care/ambulance/stop", { method: "POST" }); monitoring = false; clearInterval(ambulanceTimer); document.getElementById("ambulance-status").textContent = "MONITORING STOPPED"; document.getElementById("start-ambulance").disabled = false; document.getElementById("stop-ambulance").disabled = true; });
+    document.getElementById("secure-button").addEventListener("click", () => { setTimeout(() => { document.getElementById("start-secure-transmission").disabled = false; }, 300); });
+    document.getElementById("start-secure-transmission").addEventListener("click", async () => { try { const result = await api("/api/emergency-care/encrypt?live=1", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); secureTransmission = true; document.getElementById("transmission-status").textContent = "● LIVE SECURE TRANSMISSION"; document.getElementById("transmission-encryption").textContent = "ACTIVE"; document.getElementById("transmission-channel").textContent = result.compromised ? "COMPROMISED" : "SECURE"; document.getElementById("start-secure-transmission").disabled = true; if (monitoring) await tickAmbulance(); } catch (error) { document.getElementById("transmission-status").textContent = error.message; } });
+    const updateReceiver = (packet) => { values("receiver", packet); document.getElementById("receiver-live-status").textContent = "● LIVE · ENCRYPTED AT AMBULANCE · DECRYPTED AT HOSPITAL"; document.getElementById("receiver-last-updated").textContent = new Date(packet.timestamp * 1000).toLocaleTimeString(); };
+    document.getElementById("decrypt-button").addEventListener("click", async () => { setTimeout(() => { receiverTimer = setInterval(async () => { try { const result = await api("/api/emergency-care/decrypt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ quantum_key: document.getElementById("receiver-key").value }) }); if (result.live && result.packet) updateReceiver(result.packet); } catch (error) { clearInterval(receiverTimer); } }, 1000); }, 100); });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const prepareButton = document.getElementById("prepare-button");
+    const ambulancePanel = document.querySelector(".ambulance-live-panel");
+    if (!prepareButton || !ambulancePanel) return;
+    prepareButton.textContent = "PREPARE EMERGENCY DATA";
+    ambulancePanel.after(prepareButton);
+    const vitalIds = { "heart-rate": "heart_rate", spo2: "spo2", "blood-pressure": "blood_pressure", temperature: "temperature", "respiration-rate": "respiration_rate" };
+    prepareButton.addEventListener("click", () => {
+        Object.entries(vitalIds).forEach(([id, vital]) => {
+            const displayed = document.querySelector(`[data-live-ambulance="${vital}"]`);
+            if (displayed && displayed.textContent !== "--") document.getElementById(id).value = displayed.textContent;
+        });
+    }, true);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Cloud | QuantumShield-MED</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medical.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/healthcare_cloud.css') }}">
+</head>
+<body>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="logo-area"><div class="logo">Q</div><div class="logo-text"><h2>QuantumShield</h2><span>MED</span></div></div>
+        <div class="menu-title">MAIN MENU</div>
+        <a href="/" class="nav-item">Dashboard</a>
+        <a href="/medical-imaging" class="nav-item">Medical Imaging</a>
+        <a href="/patient-monitoring" class="nav-item">Patient Monitoring</a>
+        <a href="/hospital-sharing" class="nav-item">Hospital Sharing</a>
+        <a href="/emergency-care" class="nav-item">Emergency Care</a>
+        <a href="/healthcare-cloud" class="nav-item active">Healthcare Cloud</a>
+        <div class="sidebar-bottom"><div class="status"><span class="status-dot"></span>BB84 Quantum Engine Ready</div></div>
+    </aside>
+    <main class="main-content cloud-page">
+        <header class="top-header"><div><div class="page-label">MEDICAL APPLICATION 05</div><h1>Quantum-Secure Healthcare Cloud</h1><p class="page-subtitle">Authorized encrypted medical record storage</p></div><div class="security-badge">QUANTUM PROTECTED</div></header>
+        <nav class="cloud-workflow" aria-label="Healthcare Cloud stages">
+            <button class="cloud-step active" data-stage="prepare"><span>01</span><strong>PREPARE CLOUD RECORD</strong><small>Active</small></button>
+            <button class="cloud-step locked" data-stage="security"><span>02</span><strong>BB84 + CLOUD ENCRYPTION</strong><small>Locked</small></button>
+            <button class="cloud-step locked" data-stage="access"><span>03</span><strong>CLOUD RECORD ACCESS</strong><small>Locked</small></button>
+        </nav>
+        <div id="workflow-message" class="cloud-message" hidden></div>
+
+        <section class="cloud-stage stage-prepare stage-visible">
+            <div class="cloud-card"><div class="card-label">STEP 01 · PREPARE CLOUD RECORD</div><h2>Hospital / Doctor</h2><p class="page-subtitle">Prepare the complete medical record for secure cloud storage.</p>
+                <div class="form-grid">
+                    <label>Patient Name<input id="patient-name" value="Demo Patient"></label>
+                    <label>Patient ID<input id="patient-id" value="CLOUD-001"></label>
+                    <label>Age<input id="age" type="number" min="0" value="45"></label>
+                    <label>Medical Condition<input id="medical-condition" value="Respiratory infection"></label>
+                    <label>Diagnosis<input id="diagnosis" value="Pneumonia suspected"></label>
+                    <label>Treatment<input id="treatment" value="Antibiotic therapy"></label>
+                    <label class="full-field">Doctor Notes<textarea id="doctor-notes">Monitor oxygen saturation and follow up in 48 hours.</textarea></label>
+                </div>
+                <h3 class="section-title">Vital Signs</h3>
+                <div class="form-grid vitals-grid">
+                    <label>Heart Rate<input id="heart-rate" value="78"></label>
+                    <label>SpO2<input id="spo2" value="97"></label>
+                    <label>Blood Pressure<input id="blood-pressure" value="120/80"></label>
+                    <label>Temperature<input id="temperature" value="37.1"></label>
+                    <label>Respiration Rate<input id="respiration-rate" value="16"></label>
+                </div>
+                <div class="upload-grid"><label>Medical Image <small>(optional)</small><input id="medical-image" type="file" accept="image/*"></label><label>Medical Report <small>(optional)</small><input id="medical-report" type="file" accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain"></label></div>
+                <button id="prepare-button" class="medical-button">PREPARE CLOUD RECORD</button><div id="prepare-message" class="cloud-message" hidden></div>
+            </div>
+        </section>
+
+        <section class="cloud-stage stage-security">
+            <div class="cloud-card"><div class="card-label">STEP 02 · BB84 + CLOUD ENCRYPTION</div><h2>Quantum-Secure Cloud Vault</h2>
+                <div class="security-toolbar"><label><input id="eve-checkbox" type="checkbox"> SIMULATE EVE ATTACK</label><button id="encrypt-button" class="medical-button">ENCRYPT AND STORE IN CLOUD</button></div>
+                <div id="security-message" class="cloud-message" hidden></div>
+                <div id="bb84-details" hidden>
+                    <div class="protocol-grid"><article class="protocol-card"><h3>ALICE</h3><b>Alice Bits</b><pre id="alice-bits"></pre><b>Alice Bases</b><pre id="alice-bases"></pre></article><article class="protocol-card"><h3>BOB</h3><b>Bob Bases</b><pre id="bob-bases"></pre><b>Bob Measured Bits</b><pre id="bob-bits"></pre></article><article class="protocol-card"><h3>EVE</h3><b id="eve-status">OFF</b><pre id="eve-bases">Eve: OFF</pre><pre id="eve-bits"></pre></article></div>
+                    <article class="protocol-card wide-card"><h3>BASIS COMPARISON</h3><div class="comparison-head"><span>Alice Basis</span><span>Bob Basis</span><span>Result</span></div><pre id="basis-comparison"></pre><div class="stat-row"><span>Total Bits <strong id="total-bits"></strong></span><span>Matching Bits <strong id="matching-bits"></strong></span><span>Discarded Bits <strong id="discarded-bits"></strong></span></div></article>
+                    <div class="protocol-grid"><article class="protocol-card"><h3>KEY SIFTING</h3><b>Sifted Key</b><pre id="sifted-key"></pre><div class="stat-stack"><span>Sifted Key Length <strong id="sifted-length"></strong></span></div></article><article class="protocol-card"><h3>QBER SECURITY CHECK</h3><div class="stat-stack"><span>QBER <strong id="qber"></strong></span><span>Security Status <strong id="security-status"></strong></span></div><p id="qber-warning"></p></article></div>
+                    <article class="protocol-card key-card"><h3>QUANTUM SESSION KEY</h3><strong id="key-length"></strong><pre id="quantum-key"></pre><button id="copy-key" class="medical-button" disabled>COPY QUANTUM KEY</button></article>
+                    <div class="cloud-result"><strong id="encryption-result">MEDICAL RECORD ENCRYPTED</strong><span>STORED IN QUANTUM-SECURE CLOUD</span><div class="status-grid"><span>BB84 <b>COMPLETED</b></span><span>QBER <b id="stored-qber"></b></span><span>Encryption <b>ACTIVE</b></span><span>Cloud Status <b>QUANTUM PROTECTED</b></span></div></div>
+                </div>
+            </div>
+            <aside class="vault-panel"><div class="card-label">QUANTUM HEALTHCARE CLOUD</div><h2>Cloud Vault</h2><div class="vault-status"><span>Record Status</span><strong id="record-status">EMPTY</strong><span>Cloud Status</span><strong>QUANTUM PROTECTED</strong></div><div class="vault-stats"><span>Records Stored <b id="records-stored">0</b></span><span>Encrypted Records <b id="encrypted-records">0</b></span><span>BB84 Sessions <b id="bb84-sessions">0</b></span><span>Secure Channels <b id="secure-channels">0</b></span><span>Threats Detected <b id="threats-detected">0</b></span></div></aside>
+        </section>
+
+        <section class="cloud-stage stage-access"><div class="cloud-card access-card"><div class="card-label">STEP 03 · CLOUD RECORD ACCESS</div><h2>Authorized Doctor / Hospital</h2><p class="page-subtitle">Enter the quantum key to retrieve the encrypted cloud record.</p><label>QUANTUM KEY<input id="access-key" autocomplete="off" spellcheck="false" placeholder="Enter the quantum session key"></label><button id="access-button" class="medical-button" disabled>ACCESS CLOUD RECORD</button><div id="access-message" class="cloud-message" hidden></div><article id="record-output" class="record-output" hidden><h3 id="access-title">AUTHORIZED ACCESS</h3><p id="access-warning"></p><dl id="output-fields"></dl><div id="download-area"></div></article></div></section>
+    </main>
+</div>
+<script src="{{ url_for('static', filename='js/healthcare_cloud.js') }}"></script>
+
+</body>
+</html>

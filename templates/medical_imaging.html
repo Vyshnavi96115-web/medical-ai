@@ -2,354 +2,215 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Medical Imaging | QuantumShield-MED</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/medical.css') }}">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Imaging & Cloud Vault | QuantumShield-MED</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/medical.css') }}">
 </head>
-
 
 <body>
 
 <div class="app-container">
 
+    <!-- SIDEBAR NAVIGATION -->
     <aside class="sidebar">
-
         <div class="logo-area">
-
-            <div class="logo">
-                Q
-            </div>
-
+            <div class="logo">Q</div>
             <div class="logo-text">
-
                 <h2>QuantumShield</h2>
-
                 <span>MED</span>
-
             </div>
-
         </div>
 
-
-        <div class="menu-title">
-            MAIN MENU
-        </div>
-
+        <div class="menu-title">MAIN MENU</div>
 
         <a href="/" class="nav-item">
             🏠 &nbsp; Dashboard
         </a>
-
-
-        <a href="/medical-imaging"
-           class="nav-item active">
-
-            🩻 &nbsp; Medical Imaging
-
+        <a href="/medical-imaging" class="nav-item active">
+            🩻 &nbsp; Medical Application 05
         </a>
-
-
         <a href="{{ url_for('patient_monitoring') }}" class="nav-item">
             ❤️ &nbsp; Patient Monitoring
         </a>
-
-
         <a href="{{ url_for('hospital_sharing') }}" class="nav-item">
             🏥 &nbsp; Hospital Sharing
         </a>
-
-
         <a href="{{ url_for('emergency_care') }}" class="nav-item">
             🚑 &nbsp; Emergency Care
         </a>
-
-
         <a href="{{ url_for('healthcare_cloud') }}" class="nav-item">
             ☁️ &nbsp; Healthcare Cloud
         </a>
 
-
         <div class="sidebar-bottom">
-
             <div class="status">
-
                 <span class="status-dot"></span>
-
                 BB84 Quantum Engine Ready
-
             </div>
-
         </div>
-
     </aside>
 
-
-    <!-- =====================================================
-         MAIN CONTENT
-    ====================================================== -->
-
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
-
-        <!-- =================================================
-             HEADER
-        ================================================== -->
-
+        <!-- TOP HEADER -->
         <header class="top-header">
-
             <div>
-
-                <div class="page-label">
-                    MEDICAL APPLICATION 01
-                </div>
-
-                <h1>
-                    Medical Imaging Security
-                </h1>
-
+                <div class="page-label">MEDICAL APPLICATION 05</div>
+                <h1>Quantum-Secure Healthcare Cloud</h1>
+                <p class="header-subtitle">Authorized encrypted medical record storage</p>
             </div>
-
-
             <div class="security-badge">
-
-                ● QUANTUM PROTECTED
-
+                <span class="badge-dot">●</span> QUANTUM PROTECTED
             </div>
-
         </header>
 
-
-        <!-- =================================================
-             INTRODUCTION
-        ================================================== -->
-
-        <section class="medical-hero">
-
-            <div>
-
-                <div class="page-label">
-                    SECURE DIAGNOSTIC IMAGING
-                </div>
-
-                <h2>
-                    Protect sensitive medical images
-                    with quantum-secured communication.
-                </h2>
-
-                <p>
-
-                    Upload an X-ray, MRI, CT scan or
-                    ultrasound image. The medical image
-                    is analyzed first. After successful
-                    verification, BB84 quantum key
-                    distribution is used to establish
-                    a secure encryption key.
-
-                </p>
-
-            </div>
-
-
-            <div class="medical-icon">
-
-                🩻
-
-            </div>
-
-        </section>
-
-
-        <!-- =================================================
-             WORKFLOW
-        ================================================== -->
-
+        <!-- WORKFLOW STEPPER -->
         <section class="workflow">
-
-
-              <div id="workflow-upload"
-                  class="workflow-step active"
-                  data-stage="upload">
-
-                <span>01</span>
-
-                <strong>
-                    Upload
-                </strong>
-
-                <small>
-                    Medical Image
-                </small>
-
+            <div id="workflow-upload" class="workflow-step active" data-stage="upload">
+                <span class="step-number">①</span>
+                <div class="step-details">
+                    <strong>Prepare Record</strong>
+                    <small class="step-status">ACTIVE</small>
+                </div>
             </div>
-
-
             <div class="workflow-line"></div>
-
-
-              <div id="workflow-bb84"
-                  class="workflow-step"
-                  data-stage="encryption">
-
-                <span>02</span>
-
-                <strong>
-                    Encrypt
-                </strong>
-
-                <small>
-                    BB84 Key Generation
-                </small>
-
+            <div id="workflow-bb84" class="workflow-step" data-stage="encryption">
+                <span class="step-number">②</span>
+                <div class="step-details">
+                    <strong>Secure & Encrypt</strong>
+                    <small class="step-status">LOCKED</small>
+                </div>
             </div>
-
-
             <div class="workflow-line"></div>
-
-
-            <div id="workflow-encrypt"
-                 class="workflow-step"
-                 data-stage="decryption">
-
-                <span>03</span>
-
-                <strong>
-                    Decrypt
-                </strong>
-
-                <small>
-                    Recover Image
-                </small>
-
+            <div id="workflow-encrypt" class="workflow-step" data-stage="decryption">
+                <span class="step-number">③</span>
+                <div class="step-details">
+                    <strong>Authorized Access</strong>
+                    <small class="step-status">LOCKED</small>
+                </div>
             </div>
-
         </section>
 
-
-        <!-- =================================================
-             MAIN IMAGING GRID
-        ================================================== -->
-
+        <!-- MAIN IMAGING GRID -->
         <section class="imaging-grid">
 
-
-            <!-- =================================================
-                 STEP 01 — UPLOAD + ANALYSIS
-            ================================================== -->
-
-            <div class="medical-card stage-panel stage-upload">
-
-
+            <!-- STEP 01 — PREPARE CLOUD RECORD -->
+            <div class="medical-card stage-panel stage-upload stage-visible">
                 <div class="card-heading">
-
                     <div>
-
-                        <div class="card-label">
-                            STEP 01
-                        </div>
-
-                        <h2>
-                            Select Medical Image
-                        </h2>
-
+                        <div class="card-label">STEP 01</div>
+                        <h2>Prepare Cloud Record</h2>
+                        <p class="card-subtitle">Prepare the complete medical record for secure cloud storage.</p>
                     </div>
-
-                    <span class="card-icon">
-                        📁
-                    </span>
-
+                    <span class="card-icon">📁</span>
                 </div>
 
+                <form id="image-form" enctype="multipart/form-data">
 
-                <form
-                    id="image-form"
-                    enctype="multipart/form-data"
-                >
+                    <!-- PATIENT INFORMATION GRID -->
+                    <div class="form-section">
+                        <h3 class="section-title">Patient Information</h3>
+                        <div class="form-grid patient-grid">
+                            <div class="form-group">
+                                <label for="patient-name">Patient Name</label>
+                                <input type="text" id="patient-name" name="patient_name" placeholder="e.g. Jane Doe" value="Jane Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="patient-id">Patient ID</label>
+                                <input type="text" id="patient-id" name="patient_id" placeholder="e.g. PX-89421" value="PX-89421">
+                            </div>
+                            <div class="form-group">
+                                <label for="patient-age">Age</label>
+                                <input type="number" id="patient-age" name="patient_age" placeholder="45" value="45">
+                            </div>
+                            <div class="form-group span-2">
+                                <label for="medical-condition">Medical Condition</label>
+                                <input type="text" id="medical-condition" name="medical_condition" placeholder="e.g. Acute Respiratory Assessment" value="Diagnostic Medical Evaluation">
+                            </div>
+                            <div class="form-group span-2">
+                                <label for="medical-diagnosis">Diagnosis</label>
+                                <input type="text" id="medical-diagnosis" name="medical_diagnosis" placeholder="e.g. Clinical Laboratory Blood Report" value="Clinical Diagnostic Imaging & Report">
+                            </div>
+                            <div class="form-group span-2">
+                                <label for="medical-treatment">Treatment</label>
+                                <input type="text" id="medical-treatment" name="medical_treatment" placeholder="Prescribed treatment plan" value="Standard Clinical Observation & Follow-up">
+                            </div>
+                            <div class="form-group span-2">
+                                <label for="doctor-notes">Doctor Notes</label>
+                                <textarea id="doctor-notes" name="doctor_notes" rows="2" placeholder="Enter doctor notes...">Encrypted patient record prepared for secure BB84 quantum cloud distribution.</textarea>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- VITAL SIGNS SUBSECTION -->
+                    <div class="form-section">
+                        <h3 class="section-title">Vital Signs</h3>
+                        <div class="vitals-grid">
+                            <div class="vital-card">
+                                <span class="vital-label">Heart Rate</span>
+                                <div class="vital-value">78 <small>bpm</small></div>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">SpO₂</span>
+                                <div class="vital-value">97 <small>%</small></div>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">Blood Pressure</span>
+                                <div class="vital-value">120/80 <small>mmHg</small></div>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">Temperature</span>
+                                <div class="vital-value">37.1 <small>°C</small></div>
+                            </div>
+                            <div class="vital-card">
+                                <span class="vital-label">Respiration Rate</span>
+                                <div class="vital-value">16 <small>/min</small></div>
+                            </div>
+                        </div>
+                    </div>
 
-                    <!-- FILE SELECTOR -->
-
-                    <label
-                        class="upload-area"
-                        for="medical-image"
-                    >
-
-                        <div class="upload-icon">
-                            ⬆
+                    <!-- MEDICAL FILES UPLOAD SECTION -->
+                    <div class="form-section">
+                        <h3 class="section-title">Medical Files</h3>
+                        <div class="upload-cards-grid">
+                            <div class="file-upload-card" onclick="document.getElementById('medical-image').click();">
+                                <div class="upload-card-icon">🩻</div>
+                                <h4>Medical Image</h4>
+                                <p>JPG, JPEG, PNG and supported medical images</p>
+                                <button type="button" class="btn-select-file">Choose Image</button>
+                            </div>
+                            <div class="file-upload-card" onclick="document.getElementById('medical-image').click();">
+                                <div class="upload-card-icon">📄</div>
+                                <h4>Medical Report</h4>
+                                <p>PDF and supported medical reports</p>
+                                <button type="button" class="btn-select-file">Choose Report</button>
+                            </div>
                         </div>
 
-                        <strong>
-                            Choose medical image or report
-                        </strong>
-
-                        <span>
-                            PNG, JPG, JPEG, WEBP, BMP, TIFF, PDF
-                        </span>
-
-
-                        <input
-                            type="file"
-                            id="medical-image"
-                            name="medical_image"
-
-                            accept="image/*,.pdf"
-                        >
-
-                    </label>
-
-
-
-                    <!-- SELECTED FILE -->
-
-                    <div
-                        id="selected-file"
-                        class="selected-file"
-                    >
-                        No file selected
+                        <!-- Preserved existing HTML file input -->
+                        <input type="file" id="medical-image" name="medical_image" accept="image/*,.pdf" style="display:none;">
+                        <div id="selected-file" class="selected-file">No file selected</div>
                     </div>
 
-
-                    <!-- ANALYZE BUTTON -->
-
-                    <button
-                        type="button"
-                        id="analyze-image"
-                        class="medical-button"
-                        disabled
-                    >
-
-                        🔍 Analyze Medical Image
-
-                    </button>
-
-
-                    <!-- =================================================
-                         ANALYSIS RESULT
-                    ================================================== -->
-
-                    <div
-                        id="analysis-result"
-                        class="image-message"
-                        style="display:none;"
-                    >
-
+                    <!-- PRIMARY ACTION CTA -->
+                    <div class="cta-wrapper">
+                        <button type="button" id="analyze-image" class="medical-button cta-button" disabled>
+                            ✓ Prepare Cloud Record
+                        </button>
                     </div>
 
-                    <div
-                        id="operation-choice"
-                        class="operation-choice"
-                        style="display:none;"
-                    >
+                    <!-- ANALYSIS RESULT MESSAGE -->
+                    <div id="analysis-result" class="image-message" style="display:none;"></div>
+
+                    <!-- OPERATION CHOICE -->
+                    <div id="operation-choice" class="operation-choice" style="display:none;">
                         <div class="card-label">CHOOSE OPERATION</div>
                         <div class="operation-buttons">
                             <button type="button" id="choose-encrypt" class="medical-button">
@@ -361,198 +222,111 @@
                         </div>
                     </div>
 
-
                 </form>
-
             </div>
 
-
-            <!-- =================================================
-                 STEP 02–03 — QUANTUM SECURITY
-            ================================================== -->
-
+            <!-- STEP 02 — BB84 + CLOUD ENCRYPTION -->
             <div class="medical-card stage-panel stage-encryption">
-
-
                 <div class="card-heading">
-
                     <div>
-
-                        <div class="card-label">
-                            STEP 02
-                        </div>
-
-                        <h2>
-                            Encrypt Medical Image
-                        </h2>
-
+                        <div class="card-label">STEP 02</div>
+                        <h2>Quantum Security & Encryption</h2>
+                        <p class="card-subtitle">Secure the prepared medical record using BB84 quantum key distribution.</p>
                     </div>
-
-                    <span class="card-icon">
-                        ⚛️
-                    </span>
-
+                    <span class="card-icon">⚛️</span>
                 </div>
 
                 <div id="encryption-controls" style="display:none;">
-                    <p class="panel-copy">
-                        Generate a shared quantum key with BB84 before encrypting this analyzed image.
-                    </p>
-                    <label class="eve-option" for="eve-checkbox">
-                        <input type="checkbox" id="eve-checkbox">
-                        <strong>Simulate Eve interception</strong>
-                    </label>
-                        <button type="button" id="encrypt-image" class="medical-button">
-                            🔐 Generate Quantum Key &amp; Encrypt Image
+                    <div class="security-testing-box">
+                        <span class="box-label">Security Testing</span>
+                        <label class="eve-option" for="eve-checkbox">
+                            <input type="checkbox" id="eve-checkbox">
+                            <strong>Simulate Eve Attack</strong>
+                        </label>
+                        <p class="eve-hint">Enable this option to simulate an eavesdropping attack during the BB84 communication process.</p>
+                    </div>
+                    <div class="cta-wrapper">
+                        <button type="button" id="encrypt-image" class="medical-button cta-button">
+                            🔐 Encrypt & Store Securely
                         </button>
+                    </div>
                 </div>
 
+                <!-- QUANTUM HEALTHCARE CLOUD VAULT STATUS -->
+                <div class="vault-dashboard">
+                    <div class="vault-header">
+                        <div class="card-label">QUANTUM HEALTHCARE CLOUD</div>
+                        <h3>Cloud Vault Status</h3>
+                    </div>
+                    <div class="stat-cards-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Records Stored</span>
+                            <span class="stat-value">01</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Encrypted Records</span>
+                            <span class="stat-value">01</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">BB84 Sessions</span>
+                            <span class="stat-value">01</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Secure Channels</span>
+                            <span class="stat-value">01</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Threats Detected</span>
+                            <span class="stat-value danger">00</span>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- SECURITY STATUS -->
-
+                <!-- LIVE SECURITY ROW METRICS -->
                 <div class="quantum-status">
-
-
-                    <!-- BB84 -->
-
                     <div class="security-row">
-
-                        <span>
-                            BB84 Status
-                        </span>
-
-                        <strong id="bb84-status">
-                            WAITING
-                        </strong>
-
+                        <span>BB84 Status</span>
+                        <strong id="bb84-status">WAITING</strong>
                     </div>
-
-
-                    <!-- QBER -->
-
                     <div class="security-row">
-
-                        <span>
-                            QBER
-                        </span>
-
-                        <strong id="image-qber">
-                            --
-                        </strong>
-
+                        <span>QBER</span>
+                        <strong id="image-qber">--</strong>
                     </div>
-
-
-                    <!-- QUANTUM KEY -->
-
                     <div class="security-row">
-
-                        <span>
-                            Quantum Key
-                        </span>
-
-                        <code id="image-key">
-                            --
-                        </code>
-
+                        <span>Quantum Key</span>
+                        <code id="image-key">--</code>
                     </div>
-
-
-                    <!-- CHANNEL -->
-
                     <div class="security-row">
-
-                        <span>
-                            Channel
-                        </span>
-
-                        <strong id="image-channel">
-                            --
-                        </strong>
-
+                        <span>Channel</span>
+                        <strong id="image-channel">--</strong>
                     </div>
-
-
-                    <!-- EVE -->
-
                     <div class="security-row">
-
-                        <span>
-                            Eve
-                        </span>
-
-                        <strong id="eve-status">
-                            INACTIVE
-                        </strong>
-
+                        <span>Eve</span>
+                        <strong id="eve-status">INACTIVE</strong>
                     </div>
-
-
                 </div>
-
 
                 <!-- QUANTUM MESSAGE -->
-
-                <div
-                    id="image-message"
-                    class="image-message"
-                >
-
-                    Upload a medical image
-                    and analyze it to begin.
-
+                <div id="image-message" class="image-message">
+                    Upload a medical record and analyze it to begin quantum encryption.
                 </div>
 
-
                 <!-- COPY KEY -->
-
-                <button
-                    type="button"
-                    id="copy-key"
-                    class="medical-button"
-                    style="display:none;"
-                >
-
+                <button type="button" id="copy-key" class="medical-button" style="display:none;">
                     📋 Copy Quantum Key
-
                 </button>
-
-
             </div>
-
 
         </section>
 
-
-        <!-- =====================================================
-             BB84 DETAILS
-        ====================================================== -->
-
-        <section
-            id="bb84-details"
-            class="medical-card stage-panel stage-encryption"
-            style="display:none; margin-top:25px;"
-        >
-
-
+        <!-- BB84 STREAM DETAILS PANEL -->
+        <section id="bb84-details" class="medical-card stage-panel stage-encryption" style="display:none; margin-top:25px;">
             <div class="card-heading">
-
                 <div>
-
-                    <div class="card-label">
-                        BB84 PROTOCOL
-                    </div>
-
-                    <h2>
-                        Quantum Key Generation
-                    </h2>
-
+                    <div class="card-label">BB84 PROTOCOL</div>
+                    <h2>Quantum Key Generation</h2>
                 </div>
-
-                <span class="card-icon">
-                    🔬
-                </span>
-
+                <span class="card-icon">🔬</span>
             </div>
 
             <div class="bb84-streams">
@@ -578,383 +352,164 @@
                 </div>
             </div>
 
-
-            <div
-                style="
-                    display:grid;
-                    grid-template-columns:
-                    repeat(auto-fit,minmax(180px,1fr));
-                    gap:15px;
-                    margin-top:20px;
-                "
-            >
-
-
+            <div class="bb84-metrics-grid">
                 <div class="security-row">
-
-                    <span>
-                        Alice
-                    </span>
-
-                    <strong id="alice-status">
-                        READY
-                    </strong>
-
+                    <span>Alice</span>
+                    <strong id="alice-status">READY</strong>
                 </div>
-
-
                 <div class="security-row">
-
-                    <span>
-                        Bob
-                    </span>
-
-                    <strong id="bob-status">
-                        READY
-                    </strong>
-
+                    <span>Bob</span>
+                    <strong id="bob-status">READY</strong>
                 </div>
-
-
                 <div class="security-row">
-
-                    <span>
-                        Matching Bases
-                    </span>
-
-                    <strong id="matching-bases">
-                        --
-                    </strong>
-
+                    <span>Matching Bases</span>
+                    <strong id="matching-bases">--</strong>
                 </div>
-
-
                 <div class="security-row">
-
-                    <span>
-                        Discarded Bases
-                    </span>
-
-                    <strong id="discarded-bases">
-                        --
-                    </strong>
-
+                    <span>Discarded Bases</span>
+                    <strong id="discarded-bases">--</strong>
                 </div>
-
-
                 <div class="security-row">
-
-                    <span>
-                        Final Key Length
-                    </span>
-
-                    <strong id="final-key-length">
-                        --
-                    </strong>
-
+                    <span>Final Key Length</span>
+                    <strong id="final-key-length">--</strong>
                 </div>
-
-
             </div>
 
-
-            <div
-                id="bb84-process-message"
-                class="image-message"
-                style="margin-top:20px;"
-            >
-
+            <div id="bb84-process-message" class="image-message" style="margin-top:20px;">
                 BB84 key generation has not started.
-
             </div>
-
-
         </section>
 
-
-        <!-- =====================================================
-             STEP 04 — DECRYPTION
-        ====================================================== -->
-
-        <section
-            id="decryption-panel"
-            class="medical-card stage-panel stage-decryption"
-            style="
-                display:none;
-                margin-top:25px;
-            "
-        >
-
-
+        <!-- STEP 03 — AUTHORIZED RECORD ACCESS -->
+        <section id="decryption-panel" class="medical-card stage-panel stage-decryption" style="display:none; margin-top:25px;">
             <div class="card-heading">
-
                 <div>
-
-                    <div class="card-label">
-                        STEP 04
-                    </div>
-
-                    <h2>
-                        Decrypt Medical Image
-                    </h2>
-
+                    <div class="card-label">STEP 03</div>
+                    <h2>Authorized Doctor / Hospital</h2>
+                    <p class="card-subtitle">Enter the quantum key to retrieve the encrypted cloud record.</p>
                 </div>
-
-                <span class="card-icon">
-                    🔓
-                </span>
-
+                <span class="card-icon">🔓</span>
             </div>
 
+            <div class="key-input-group">
+                <label for="quantum-key-input" class="input-label">Quantum Key</label>
+                <input type="text" id="quantum-key-input" placeholder="Enter or paste the Quantum Key" autocomplete="off" spellcheck="false">
+            </div>
 
-            <p
-                style="
-                    color:#64748b;
-                    margin-top:5px;
-                    margin-bottom:20px;
-                "
-            >
-
-                Enter the shared Quantum Key to recover
-                the medical image.
-
-            </p>
-
-
-            <!-- =================================================
-                 ONLY INPUT REQUIRED FROM PATIENT
-            ================================================== -->
-
-            <label
-                for="quantum-key-input"
-                style="
-                    display:block;
-                    font-weight:600;
-                    margin-bottom:8px;
-                "
-            >
-
-                Enter Quantum Key
-
-            </label>
-
-
-            <input
-                type="text"
-                id="quantum-key-input"
-                placeholder="Enter or paste the Quantum Key"
-                autocomplete="off"
-                spellcheck="false"
-
-                style="
-                    width:100%;
-                    box-sizing:border-box;
-                    padding:14px;
-                    border:1px solid #cbd5e1;
-                    border-radius:10px;
-                    font-size:14px;
-                    margin-bottom:15px;
-                "
-            >
-
-
-            <!-- DECRYPT -->
-
-            <button
-                type="button"
-                id="decrypt-image"
-                class="medical-button"
-            >
-
-                🔓 Decrypt Medical Image
-
-            </button>
-
+            <div class="cta-wrapper">
+                <button type="button" id="decrypt-image" class="medical-button cta-button">
+                    🔓 Access Cloud Record
+                </button>
+            </div>
 
             <!-- DECRYPTION STATUS -->
+            <div id="decryption-message" class="image-message" style="display:none; margin-top:20px;"></div>
 
-            <div
-                id="decryption-message"
-                class="image-message"
-                style="display:none; margin-top:20px;"
-            >
-
+            <!-- DECRYPTED IMAGE DISPLAY -->
+            <div id="decrypted-image-container" style="display:none; margin-top:25px; text-align:center;">
+                <div class="card-label">DECRYPTED MEDICAL IMAGE</div>
+                <img id="decrypted-image" src="" alt="Decrypted medical image">
             </div>
 
-
-            <!-- IMAGE OUTPUT -->
-
-            <div
-                id="decrypted-image-container"
-                style="
-                    display:none;
-                    margin-top:25px;
-                    text-align:center;
-                "
-            >
-
-                <div class="card-label">
-                    DECRYPTED MEDICAL IMAGE
-                </div>
-
-
-                <img
-                    id="decrypted-image"
-                    src=""
-                    alt="Decrypted medical image"
-
-                    style="
-                        max-width:100%;
-                        max-height:500px;
-                        margin-top:15px;
-                        border-radius:12px;
-                        border:1px solid #dbe4ee;
-                    "
-                >
-
-            </div>
-
-
-            <!-- =====================================================
-                 MEDGEMMA MEDICAL AI ANALYSIS SECTION
-            ====================================================== -->
-
-            <div
-                id="medical-ai-analysis-container"
-                style="
-                    display:none;
-                    margin-top:30px;
-                    padding-top:20px;
-                    border-top:1px solid #e2e8f0;
-                "
-            >
+            <!-- MEDGEMMA MEDICAL AI ANALYSIS SECTION -->
+            <div id="medical-ai-analysis-container" class="medgemma-container" style="display:none;">
                 <div class="card-heading" style="margin-bottom:15px;">
                     <div>
                         <div class="card-label">POST-DECRYPTION DIAGNOSTIC AI</div>
-                        <h2 style="color:#0f172a;">🤖 MedGemma Healthcare AI Analysis</h2>
+                        <h2>🤖 MedGemma Healthcare AI Analysis</h2>
                     </div>
                     <span class="card-icon">🩺</span>
                 </div>
 
-                <!-- MEDICAL SAFETY DISCLAIMER -->
-                <div id="ai-disclaimer-banner" class="image-message" style="background:#fffbebf0; color:#b45309; border:1px solid #fde68a; margin-bottom:20px; font-size:13px; line-height:1.5;">
+                <!-- SAFETY DISCLAIMER BANNER -->
+                <div id="ai-disclaimer-banner" class="disclaimer-banner">
                     ⚠️ <strong>Medical Safety Disclaimer:</strong> AI-generated medical analysis is for informational and research purposes only. It is not a confirmed diagnosis or a substitute for evaluation by a qualified healthcare professional. Do not start, stop, or change medication based solely on this AI output.
                 </div>
 
-                <!-- PDF LINK CONTAINER IF APPLICABLE -->
+                <!-- PDF DOWNLOAD LINK -->
                 <div id="pdf-view-container" style="display:none; margin-bottom:15px; text-align:center;">
-                    <a id="pdf-download-link" href="#" target="_blank" class="medical-button secondary-button" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none;">
+                    <a id="pdf-download-link" href="#" target="_blank" class="medical-button secondary-button">
                         📄 Open Decrypted PDF Document
                     </a>
                 </div>
 
-                <!-- STAGE 1 MEDICAL INPUT IDENTIFICATION -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:10px; color:#2563eb; font-weight:700;">STAGE 1 — MEDICAL INPUT IDENTIFICATION</span>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; font-size:13px; color:#334155;">
-                        <div><strong>Input Type:</strong> <span id="ai-input-type" style="color:#0f172a; font-weight:600;">--</span></div>
-                        <div><strong>Anatomical Region:</strong> <span id="ai-body-region" style="color:#0f172a; font-weight:600;">--</span></div>
-                        <div><strong>Imaging Modality:</strong> <span id="ai-modality" style="color:#0f172a; font-weight:600;">--</span></div>
-                        <div><strong>Report Type:</strong> <span id="ai-report-type" style="color:#0f172a; font-weight:600;">N/A</span></div>
-                        <div><strong>Identification Certainty:</strong> <span id="ai-certainty" style="color:#16a34a; font-weight:600;">--</span></div>
+                <!-- STAGE 1 IDENTIFICATION -->
+                <div class="ai-box stage1-box">
+                    <span class="card-label highlight-blue">STAGE 1 — MEDICAL INPUT IDENTIFICATION</span>
+                    <div class="stage1-grid">
+                        <div><strong>Input Type:</strong> <span id="ai-input-type">--</span></div>
+                        <div><strong>Anatomical Region:</strong> <span id="ai-body-region">--</span></div>
+                        <div><strong>Imaging Modality:</strong> <span id="ai-modality">--</span></div>
+                        <div><strong>Report Type:</strong> <span id="ai-report-type">N/A</span></div>
+                        <div><strong>Identification Certainty:</strong> <span id="ai-certainty">--</span></div>
                     </div>
                 </div>
 
-                <!-- GRID OF AI ANALYSIS RESULTS -->
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:15px;">
-
-                    <!-- INPUT & VALIDATION STATUS -->
-                    <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
-                        <span class="card-label" style="display:block; margin-bottom:6px;">PRIMARY DIAGNOSTIC TYPE</span>
-                        <div style="font-size:14px; font-weight:600; color:#0f172a;" id="ai-medical-type">--</div>
+                <!-- SUMMARY GRID -->
+                <div class="ai-summary-grid">
+                    <div class="ai-box">
+                        <span class="card-label">PRIMARY DIAGNOSTIC TYPE</span>
+                        <div id="ai-medical-type" class="ai-val-bold">--</div>
                     </div>
-
-                    <!-- SECURITY & DECRYPTION STATUS -->
-                    <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
-                        <span class="card-label" style="display:block; margin-bottom:6px;">SECURITY &amp; DECRYPTION</span>
-                        <div style="font-size:13px; line-height:1.6; color:#334155;">
-                            <div><strong>AES-256-GCM:</strong> <span style="color:#16a34a;">Lossless Verified</span></div>
-                            <div><strong>BB84 QKD Key:</strong> <span style="color:#16a34a;">Verified</span></div>
-                            <div><strong>Eve Detection:</strong> <span style="color:#16a34a;">Not Detected</span></div>
+                    <div class="ai-box">
+                        <span class="card-label">SECURITY &amp; DECRYPTION</span>
+                        <div class="security-checks">
+                            <div><strong>AES-256-GCM:</strong> <span class="check-pass">Lossless Verified</span></div>
+                            <div><strong>BB84 QKD Key:</strong> <span class="check-pass">Verified</span></div>
+                            <div><strong>Eve Detection:</strong> <span class="check-pass">Not Detected</span></div>
                         </div>
                     </div>
-
                 </div>
 
-
-                <!-- OBSERVED MEDICAL FINDING -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:8px;">OBSERVED MEDICAL FINDING</span>
-                    <div id="ai-medical-finding" style="font-size:14px; color:#334155; line-height:1.6;">--</div>
+                <!-- AI DIAGNOSTIC SECTIONS -->
+                <div class="ai-box">
+                    <span class="card-label">OBSERVED MEDICAL FINDING</span>
+                    <div id="ai-medical-finding" class="ai-val-text">--</div>
                 </div>
 
-                <!-- ABNORMALITY / DEFECT -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px;">ABNORMALITY / DEFECT</span>
-                    <div id="ai-abnormality-defect" style="font-size:14px; color:#334155; line-height:1.5;">--</div>
+                <div class="ai-box">
+                    <span class="card-label">ABNORMALITY / DEFECT</span>
+                    <div id="ai-abnormality-defect" class="ai-val-text">--</div>
                 </div>
 
-                <!-- POSSIBLE CONDITION / INTERPRETATION -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px;">POSSIBLE MEDICAL INTERPRETATION</span>
-                    <div id="ai-possible-condition" style="font-size:15px; font-weight:600; color:#0f172a;">--</div>
+                <div class="ai-box">
+                    <span class="card-label">POSSIBLE MEDICAL INTERPRETATION</span>
+                    <div id="ai-possible-condition" class="ai-val-bold">--</div>
                 </div>
 
-                <!-- MEDICATION / TREATMENT INFORMATION -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px;">TREATMENT &amp; MEDICATION INFORMATION</span>
-                    <div id="ai-medication-info" style="font-size:14px; color:#334155; line-height:1.5;">--</div>
+                <div class="ai-box">
+                    <span class="card-label">TREATMENT &amp; MEDICATION INFORMATION</span>
+                    <div id="ai-medication-info" class="ai-val-text">--</div>
                 </div>
 
-                <!-- SIMPLE EXPLANATION -->
-                <div style="background:#eff6ff; padding:16px; border-radius:10px; border:1px solid #bfdbfe; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px; color:#1d4ed8;">SIMPLE EXPLANATION (FOR PATIENT)</span>
-                    <div id="ai-simple-explanation" style="font-size:14px; color:#1e3a8a; line-height:1.6;">--</div>
+                <div class="ai-box simple-box">
+                    <span class="card-label highlight-blue">SIMPLE EXPLANATION (FOR PATIENT)</span>
+                    <div id="ai-simple-explanation" class="ai-val-blue">--</div>
                 </div>
 
-                <!-- DETAILED EXPLANATION -->
-                <div style="background:#f8fafc; padding:16px; border-radius:10px; border:1px solid #e2e8f0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px;">DETAILED MEDICAL EXPLANATION</span>
-                    <div id="ai-detailed-explanation" style="font-size:14px; color:#334155; line-height:1.6;">--</div>
+                <div class="ai-box">
+                    <span class="card-label">DETAILED MEDICAL EXPLANATION</span>
+                    <div id="ai-detailed-explanation" class="ai-val-text">--</div>
                 </div>
 
-                <!-- UNCERTAINTY & LIMITATIONS -->
-                <div style="background:#fffbeb; padding:16px; border-radius:10px; border:1px solid #fde68a; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px; color:#b45309;">UNCERTAINTY &amp; LIMITATIONS</span>
-                    <div id="ai-uncertainty" style="font-size:14px; color:#92400e; line-height:1.5;">--</div>
+                <div class="ai-box warning-box">
+                    <span class="card-label highlight-amber">UNCERTAINTY &amp; LIMITATIONS</span>
+                    <div id="ai-uncertainty" class="ai-val-amber">--</div>
                 </div>
 
-                <!-- RECOMMENDED NEXT STEPS -->
-                <div style="background:#f0fdf4; padding:16px; border-radius:10px; border:1px solid #bbf7d0; margin-top:15px;">
-                    <span class="card-label" style="display:block; margin-bottom:6px; color:#15803d;">RECOMMENDED NEXT STEPS</span>
-                    <div id="ai-next-steps" style="font-size:14px; color:#14532d; line-height:1.5;">--</div>
+                <div class="ai-box success-box">
+                    <span class="card-label highlight-green">RECOMMENDED NEXT STEPS</span>
+                    <div id="ai-next-steps" class="ai-val-green">--</div>
                 </div>
-
-
             </div>
-
-
         </section>
-
-
-
 
     </main>
 
 </div>
 
-
-<!-- =========================================================
-     JAVASCRIPT
-========================================================== -->
-
-<script
-    src="{{ url_for('static',
-             filename='js/medical_image.js') }}">
-</script>
-
-
+<!-- JAVASCRIPT -->
+<script src="{{ url_for('static', filename='js/medical_image.js') }}"></script>
 
 </body>
-
 </html>

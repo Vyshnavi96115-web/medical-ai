@@ -26,7 +26,8 @@ class MedGemmaAnalyzer:
     """Service interface for official MedGemma multimodal healthcare AI model."""
 
     def __init__(self):
-        self.hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+        self.hf_token = os.getenv("HF_TOKEN") or os.getenv("MED") or os.getenv("MEDGEMMA_API_KEY") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+
         self.model_name = os.getenv("MEDGEMMA_MODEL", "google/medgemma-1.5-4b-it")
         self.endpoint_url = os.getenv("MEDGEMMA_ENDPOINT_URL", "https://router.huggingface.co/v1/chat/completions")
         self.report_processor = MedicalReportProcessor()

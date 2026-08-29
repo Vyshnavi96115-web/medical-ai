@@ -24,7 +24,8 @@ class MedicalImageDetector:
             try:
                 from transformers import pipeline
                 print("Loading general medical image detection model...")
-                hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+                hf_token = os.getenv("HF_TOKEN") or os.getenv("MED") or os.getenv("MEDGEMMA_API_KEY") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+
                 self._classifier = pipeline(
                     "zero-shot-image-classification",
                     model="openai/clip-vit-base-patch32",

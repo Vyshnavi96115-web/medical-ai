@@ -23,12 +23,15 @@ class MedicalImageDetector:
     def classifier(self):
         if self._classifier is None:
             print("Loading general medical image detection model...")
+            hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
             self._classifier = pipeline(
                 "zero-shot-image-classification",
-                model="openai/clip-vit-base-patch32"
+                model="openai/clip-vit-base-patch32",
+                token=hf_token
             )
             print("General medical image detection model ready.")
         return self._classifier
+
 
     def detect_medical_image(self, image_path):
         return self.analyze(image_path)

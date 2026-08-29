@@ -17,15 +17,22 @@ from transformers import pipeline
 class MedicalImageDetector:
 
     def __init__(self):
-        print("Loading general medical image detection model...")
-        self.classifier = pipeline(
-            "zero-shot-image-classification",
-            model="openai/clip-vit-base-patch32"
-        )
-        print("General medical image detection model ready.")
+        self._classifier = None
+
+    @property
+    def classifier(self):
+        if self._classifier is None:
+            print("Loading general medical image detection model...")
+            self._classifier = pipeline(
+                "zero-shot-image-classification",
+                model="openai/clip-vit-base-patch32"
+            )
+            print("General medical image detection model ready.")
+        return self._classifier
 
     def detect_medical_image(self, image_path):
         return self.analyze(image_path)
+
 
     def analyze(self, image_path):
 

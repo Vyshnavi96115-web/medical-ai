@@ -7,11 +7,12 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: #0f172a;
     background-color: #f8fafc;
-    padding: 25px 30px;
-    max-width: 1360px;
-    margin: 0 auto;
+    padding: 30px 40px;
+    margin-left: 260px;
+    width: calc(100% - 260px);
     box-sizing: border-box;
 }
+
 
 /* ================= TOP HEADER ================= */
 .cloud-page .hc-top-header {
@@ -365,6 +366,8 @@
 
 @media (max-width: 640px) {
     .cloud-page.hc-exact-redesign {
+        margin-left: 0;
+        width: 100%;
         padding: 15px;
     }
     .cloud-page .hc-row-5,
@@ -373,3 +376,4 @@
         grid-template-columns: 1fr;
     }
 }
+

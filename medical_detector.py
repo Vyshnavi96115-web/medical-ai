@@ -59,12 +59,13 @@ class MedicalImageDetector:
         for label in candidate_labels:
             lbl_lower = label.lower()
             if is_colorful:
-                if any(kw in lbl_lower for kw in ["cartoon", "landscape", "selfie", "pet", "animal", "everyday", "normal photograph", "portrait"]):
+                if any(kw in lbl_lower for kw in ["cartoon", "anime", "illustration", "wallpaper", "artwork", "manga", "poster", "graphic", "landscape", "selfie", "pet", "animal", "everyday", "normal photograph", "portrait"]):
                     score = 0.90
-                elif any(kw in lbl_lower for kw in ["dermoscopy", "skin", "histopathology", "clinical photograph"]):
+                elif any(kw in lbl_lower for kw in ["dermoscopy", "skin", "histopathology", "clinical skin photograph"]):
                     score = 0.60
                 else:
                     score = 0.10
+
             else:
                 if any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "scan", "document", "report", "microscopy", "ecg"]):
                     score = 0.85
@@ -90,16 +91,22 @@ class MedicalImageDetector:
         # 1. SCREENING: Medical vs Non-Medical
         # ----------------------------------------------------
         screening_medical = [
-            "an X-ray, CT or MRI radiograph scan",
-            "a medical diagnostic scan or ultrasound",
-            "a clinical photograph of skin, eye or body part",
-            "a medical document or report"
+            "a medical radiology X-ray scan or radiograph",
+            "a medical CT scan or MRI scan",
+            "a medical ultrasound sonogram or echocardiogram",
+            "a clinical skin photograph or dermoscopy scan",
+            "an ophthalmology retinal fundus scan of an eye retina",
+            "a printed medical laboratory report document",
+            "a microscopy histopathology tissue slide"
         ]
+
         screening_non_medical = [
-            "a normal landscape or nature photograph",
-            "a photograph of an animal or pet",
-            "an everyday non-medical object or vehicle",
-            "a cartoon graphic or illustration"
+            "an anime character illustration, cartoon drawing, or manga artwork",
+            "a digital graphic wallpaper or poster artwork",
+            "a portrait, selfie, or photograph of a person",
+            "a normal landscape, nature, or building photograph",
+            "a photograph of an animal, pet, or food item",
+            "an everyday non-medical object, vehicle, or scene"
         ]
 
         screening_results = self._classify_labels(
@@ -112,16 +119,26 @@ class MedicalImageDetector:
         h, w, _ = arr.shape
         r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
         color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
-        is_colorful = color_diff > 35.0
+        is_colorful = color_diff > 25.0
 
         scores = {res["label"]: res["score"] for res in screening_results}
         max_med = max(scores.get(lbl, 0.0) for lbl in screening_medical)
         max_non_med = max(scores.get(lbl, 0.0) for lbl in screening_non_medical)
 
-        if not is_colorful:
-            is_medical = not (scores.get("a cartoon graphic or illustration", 0.0) > 0.34)
+        s_anime = scores.get("an anime character illustration, cartoon drawing, or manga artwork", 0.0)
+        s_digital = scores.get("a digital graphic wallpaper or poster artwork", 0.0)
+        s_landscape = scores.get("a normal landscape, nature, or building photograph", 0.0)
+        s_animal = scores.get("a photograph of an animal, pet, or food item", 0.0)
+
+        if s_anime > 0.28 or s_digital > 0.28 or s_landscape > 0.28 or s_animal > 0.28:
+            is_medical = False
+        elif is_colorful:
+            is_medical = max_med >= 0.10
         else:
-            is_medical = not (max_non_med > max_med * 1.20)
+            is_medical = True
+
+
+
 
 
 

@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            message(analysisResult, `${result.type} verified successfully (${result.confidence}% confidence). Ready for quantum encryption.`);
+            message(analysisResult, `${result.type} verified successfully. Ready for quantum encryption.`);
             show(operationChoice);
             hide(encryptionControls);
             setText("bb84-status", "READY");

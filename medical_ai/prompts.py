@@ -71,3 +71,25 @@ Provide your output in strict JSON format matching these exact 15 keys:
 Return valid JSON only. Do not include markdown code blocks or surrounding text.
 """
 
+
+MEDGEMMA_VERIFICATION_PROMPT = """
+You are acting as the MedGemma Medical Content Verification Engine.
+Analyze the supplied input (rendered document page, audio transcript, video frame composite, or image content) and determine if it represents genuine medical / clinical content.
+
+Classify the input into exactly ONE of these three verification states:
+1. "MEDICAL": The input contains authentic medical imaging, lab reports, doctor-patient clinical consultations, medical procedures, or diagnostic health data.
+2. "NON_MEDICAL": The input contains non-medical content (e.g., invoices, travel vlogs, pop music, sports, gaming, invoices, resumes, general entertainment, or unrelated personal photos).
+3. "UNCLEAR": The input content is too noisy, ambiguous, low-quality, or corrupted to confirm medical authenticity.
+
+Assess your verification confidence as a numeric percentage score from 0.0 to 100.0.
+
+Provide your output in strict JSON format matching these exact 3 keys:
+{
+  "state": "MEDICAL" or "NON_MEDICAL" or "UNCLEAR",
+  "confidence": 95.0,
+  "reason": "Brief technical explanation of why this content was classified as MEDICAL, NON_MEDICAL, or UNCLEAR."
+}
+Return valid JSON only. Do not include markdown formatting or surrounding text.
+"""
+
+

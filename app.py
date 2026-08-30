@@ -1035,14 +1035,16 @@ def detect_medical_image():
                 "success": True,
                 "is_medical": False,
                 "medical_verified": False,
+                "verification_state": validation.get("verification_state", "NON_MEDICAL"),
                 "content_type": "non_medical",
                 "organ": None,
                 "modality": None,
-                "type": validation.get("medical_type", "Non-Medical Image"),
-                "confidence": 0.0,
+                "type": validation.get("medical_type", "Non-Medical File"),
+                "confidence": validation.get("confidence", 0.0),
                 "encryption_allowed": False,
-                "message": validation.get("message", "This image does not appear to be a medical image or medical report. Please upload a valid medical scan or medical report.")
+                "message": validation.get("message", "Non-medical file detected. Please upload a valid medical file.")
             })
+
 
 
 

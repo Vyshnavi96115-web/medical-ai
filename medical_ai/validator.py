@@ -6,17 +6,28 @@ and extracts Stage 1 identification metadata (input_type, body_region, modality,
 """
 
 import os
+import numpy as np
 from PIL import Image
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
 from medical_detector import MedicalImageDetector
 from .report_processor import MedicalReportProcessor
+from .medgemma import MedGemmaAnalyzer
+
 
 
 class MedicalContentValidator:
-    """Medical validation layer for images and PDF documents."""
+    """Medical validation layer for images, PDF documents, audio, and video clips."""
 
     def __init__(self):
         self.image_detector = MedicalImageDetector()
         self.report_processor = MedicalReportProcessor()
+        self.medgemma_analyzer = MedGemmaAnalyzer()
+
 
     def validate_file(self, file_path, original_filename=None):
         """
@@ -56,172 +67,223 @@ class MedicalContentValidator:
         return self._validate_image(file_path, original_filename=original_filename)
 
     def _validate_audio(self, audio_path, original_filename=None):
-        """Validate medical auscultation/phonocardiogram audio files."""
+        """Validate medical auscultation/phonocardiogram audio files using MedGemma verification."""
         fn_target = original_filename or audio_path
         fn_lower = fn_target.lower()
 
-        non_med_kws = ["music", "song", "track", "pop", "rock", "anime", "movie", "game", "ringtone", "podcast", "dance", "dj"]
-        med_kws = ["cardiac", "heart", "lung", "auscultation", "stethoscope", "doppler", "phonocardiogram", "breath", "wheeze", "murmur", "sound", "voice", "audio", "recording", "patient", "clinic", "hospital", "medical"]
+        # Transcript extraction / Filename context
+        transcript = f"Audio Recording File: {os.path.basename(fn_target)}"
+        try:
+            import speech_recognition as sr
+            r = sr.Recognizer()
+            if audio_path.lower().endswith(".wav"):
+                with sr.AudioFile(audio_path) as source:
+                    audio_data = r.record(source, duration=30)
+                    transcript += "\nTranscribed Audio Content:\n" + r.recognize_google(audio_data)
+        except Exception:
+            pass
 
-        is_non_med = any(kw in fn_lower for kw in non_med_kws) and not any(kw in fn_lower for kw in med_kws)
-        if is_non_med:
+        # MedGemma Verification
+        ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(None, media_type="audio", additional_text=transcript)
+        state = ver.get("state", "MEDICAL")
+        conf = float(ver.get("confidence", 90.0))
+        reason = ver.get("reason", "")
+
+        if state == "NON_MEDICAL" or conf < 35.0:
             return {
                 "is_medical": False,
+                "verification_state": "NON_MEDICAL",
                 "input_type": "non_medical",
                 "body_region": "Not applicable",
                 "modality": "Non-medical Audio",
                 "report_type": None,
                 "certainty": "high",
                 "medical_type": "Non-Medical Audio",
-                "confidence": 0.0,
-                "message": "This audio recording does not appear to be a medical auscultation or phonocardiogram recording.",
+                "confidence": conf,
+                "message": "Non-medical file detected. Please upload a valid medical file.",
+                "is_pdf": False,
+                "extracted_text": ""
+            }
+
+        if state == "UNCLEAR" or conf < 70.0:
+            return {
+                "is_medical": False,
+                "verification_state": "UNCLEAR",
+                "input_type": "unclear",
+                "body_region": "Not applicable",
+                "modality": "Unclear Audio Payload",
+                "report_type": None,
+                "certainty": "low",
+                "medical_type": "Unclear Audio",
+                "confidence": conf,
+                "message": "Unable to verify this file as a medical file. Please upload a clearer medical file.",
                 "is_pdf": False,
                 "extracted_text": ""
             }
 
         return {
             "is_medical": True,
+            "verification_state": "MEDICAL",
             "input_type": "medical_audio",
             "body_region": "Heart / Lungs / Phonocardiogram",
             "modality": "Stethoscope / Auscultation Audio",
             "report_type": None,
             "certainty": "high",
             "medical_type": "Medical Audio (Stethoscope / Auscultation Audio)",
-            "confidence": 95.0,
+            "confidence": conf,
             "message": "Medical stethoscope / auscultation audio verified successfully.",
             "is_pdf": False,
-            "extracted_text": ""
+            "extracted_text": transcript
         }
 
     def _validate_video(self, video_path, original_filename=None):
-        """Validate medical ultrasound/endoscopy video clips."""
+        """Validate medical ultrasound/endoscopy video clips using MedGemma verification."""
         fn_target = original_filename or video_path
-        fn_lower = fn_target.lower()
 
-        non_med_kws = ["movie", "film", "anime", "cartoon", "trailer", "gameplay", "tiktok", "vlog", "vimeo", "youtube", "cinema", "show"]
-        med_kws = ["ultrasound", "echo", "echocardiogram", "endoscopy", "laparoscopy", "doppler", "cardiac", "motion", "scan", "video", "clip", "recording", "surgery", "clinic", "hospital", "medical", "patient"]
+        grid_img = None
+        try:
+            cap = cv2.VideoCapture(video_path)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            if total_frames > 0:
+                indices = [int(total_frames * i / 6) for i in range(6)]
+                extracted_frames = []
+                for idx in indices:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+                    ret, frame = cap.read()
+                    if ret and frame is not None:
+                        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        pil_f = Image.fromarray(rgb).resize((250, 250))
+                        extracted_frames.append(pil_f)
+                cap.release()
 
-        is_non_med = any(kw in fn_lower for kw in non_med_kws) and not any(kw in fn_lower for kw in med_kws)
-        if is_non_med:
+                if len(extracted_frames) == 6:
+                    grid_img = Image.new("RGB", (750, 500), color=(0, 0, 0))
+                    grid_img.paste(extracted_frames[0], (0, 0))
+                    grid_img.paste(extracted_frames[1], (250, 0))
+                    grid_img.paste(extracted_frames[2], (500, 0))
+                    grid_img.paste(extracted_frames[3], (0, 250))
+                    grid_img.paste(extracted_frames[4], (250, 250))
+                    grid_img.paste(extracted_frames[5], (500, 250))
+        except Exception as vid_err:
+            print(f"[VALIDATOR] Video frame extraction notice: {vid_err}")
+
+        # MedGemma Verification
+        ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(grid_img, media_type="video", additional_text=f"Video Filename: {os.path.basename(fn_target)}")
+        state = ver.get("state", "MEDICAL")
+        conf = float(ver.get("confidence", 90.0))
+
+        if state == "NON_MEDICAL" or conf < 35.0:
             return {
                 "is_medical": False,
+                "verification_state": "NON_MEDICAL",
                 "input_type": "non_medical",
                 "body_region": "Not applicable",
                 "modality": "Non-medical Video",
                 "report_type": None,
                 "certainty": "high",
                 "medical_type": "Non-Medical Video",
-                "confidence": 0.0,
-                "message": "This video recording does not appear to be a medical ultrasound or endoscopy video clip.",
+                "confidence": conf,
+                "message": "Non-medical file detected. Please upload a valid medical file.",
+                "is_pdf": False,
+                "extracted_text": ""
+            }
+
+        if state == "UNCLEAR" or conf < 70.0:
+            return {
+                "is_medical": False,
+                "verification_state": "UNCLEAR",
+                "input_type": "unclear",
+                "body_region": "Not applicable",
+                "modality": "Unclear Video Payload",
+                "report_type": None,
+                "certainty": "low",
+                "medical_type": "Unclear Video",
+                "confidence": conf,
+                "message": "Unable to verify this file as a medical file. Please upload a clearer medical file.",
                 "is_pdf": False,
                 "extracted_text": ""
             }
 
         return {
             "is_medical": True,
+            "verification_state": "MEDICAL",
             "input_type": "medical_video",
             "body_region": "Cardiac / Endoscopy / Ultrasound",
             "modality": "Ultrasound / Endoscopy Video",
             "report_type": None,
             "certainty": "high",
             "medical_type": "Medical Video (Ultrasound / Endoscopy Clip)",
-            "confidence": 95.0,
+            "confidence": conf,
             "message": "Medical ultrasound / endoscopy video clip verified successfully.",
             "is_pdf": False,
             "extracted_text": ""
         }
 
-
     def _validate_pdf(self, pdf_path, original_filename=None):
-        """Validate PDF document for medical report content and extract Stage 1 metadata."""
+        """Validate PDF document for medical report content using MedGemma verification."""
         fn_target = original_filename or pdf_path
-        fn_lower = fn_target.lower()
 
-        # 1. Filename Non-Medical Indicator Check
-        non_med_kws = ["invoice", "resume", "cv", "tax", "bill", "receipt", "statement", "contract", "homework", "assignment", "ticket", "passport", "manual", "novel", "ebook", "attack", "titan", "anime", "wallpaper", "cat", "dog", "car", "portrait", "selfie"]
-        med_kws = ["eye", "retina", "fundus", "xray", "x-ray", "mri", "ct", "scan", "lesion", "skin", "ultrasound", "ecg", "report", "lab", "blood", "cbc", "patient", "doctor", "clinic", "hospital", "medical", "pathology", "radiology"]
-
-        is_filename_non_med = any(kw in fn_lower for kw in non_med_kws) and not any(kw in fn_lower for kw in med_kws)
-        if is_filename_non_med:
-            return {
-                "is_medical": False,
-                "input_type": "non_medical",
-                "body_region": "Not applicable",
-                "modality": "Non-medical Document",
-                "report_type": None,
-                "certainty": "high",
-                "medical_type": "Non-Medical Document",
-                "confidence": 0.0,
-                "message": "This PDF document does not appear to be a medical image or medical report. Please upload a valid medical scan or medical report.",
-                "is_pdf": True,
-                "extracted_text": ""
-            }
-
-        # 2. Extract Text & Check Clinical Terminology
+        # 1. Extract text & render page image
         text = self.report_processor.extract_text_from_pdf(pdf_path)
-        text_lower = text.lower() if text else ""
-
-        non_med_text = ["invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "bank statement", "account number", "balance", "software engineer", "purchase order", "payment receipt"]
-        med_terms = ["patient", "diagnosis", "laboratory", "radiology", "blood", "cbc", "hemoglobin", "wbc", "platelet", "glucose", "cholesterol", "physician", "hospital", "clinic", "impression", "findings", "pathology", "specimen", "vital", "prescription", "ultrasound", "x-ray", "mri", "ct scan", "ecg", "retina", "ophthalmology"]
-
-        matched_med = sum(1 for kw in med_terms if kw in text_lower)
-        matched_non_med = sum(1 for kw in non_med_text if kw in text_lower)
-
-        if matched_non_med > 0 and matched_med < 2:
-            return {
-                "is_medical": False,
-                "input_type": "non_medical",
-                "body_region": "Not applicable",
-                "modality": "Non-medical Document",
-                "report_type": None,
-                "certainty": "high",
-                "medical_type": "Non-Medical Document",
-                "confidence": 0.0,
-                "message": "This PDF document does not appear to be a medical image or medical report. Please upload a valid medical scan or medical report.",
-                "is_pdf": True,
-                "extracted_text": text
-            }
-
-        # 3. Vision Preview Classifier fallback if text is sparse or PDF contains embedded scan
+        page_img = None
         temp_img_path = pdf_path + "_preview.png"
-        img_result = None
         try:
             self.report_processor.pdf_to_preview_image(pdf_path, temp_img_path)
-            img_result = self.image_detector.analyze(temp_img_path, original_filename=original_filename)
             if os.path.exists(temp_img_path):
+                page_img = Image.open(temp_img_path).convert("RGB")
                 os.remove(temp_img_path)
-        except Exception as err:
-            print(f"[VALIDATOR] PDF vision validation notice: {err}")
+        except Exception:
             if os.path.exists(temp_img_path):
                 os.remove(temp_img_path)
 
-        has_medical_indicators = (matched_med >= 2) or any(kw in fn_lower for kw in med_kws) or (img_result and img_result.get("is_medical"))
+        # 2. MedGemma Verification
+        ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(page_img, media_type="pdf", additional_text=f"Document Filename: {fn_target}\n\n{text}")
 
-        if not has_medical_indicators:
+        state = ver.get("state", "MEDICAL")
+        conf = float(ver.get("confidence", 95.0))
+
+        if state == "NON_MEDICAL" or conf < 35.0:
             return {
                 "is_medical": False,
+                "verification_state": "NON_MEDICAL",
                 "input_type": "non_medical",
                 "body_region": "Not applicable",
                 "modality": "Non-medical Document",
                 "report_type": None,
                 "certainty": "high",
                 "medical_type": "Non-Medical Document",
-                "confidence": 0.0,
-                "message": "This PDF document does not appear to be a medical image or medical report. Please upload a valid medical scan or medical report.",
+                "confidence": conf,
+                "message": "Non-medical file detected. Please upload a valid medical file.",
                 "is_pdf": True,
                 "extracted_text": text
             }
 
-        # 4. Identify specific PDF report type & organ:
-        if "eye" in text_lower or "retina" in text_lower or "fundus" in text_lower or "ophthalm" in text_lower or "eye" in fn_lower:
+        if state == "UNCLEAR" or conf < 70.0:
+            return {
+                "is_medical": False,
+                "verification_state": "UNCLEAR",
+                "input_type": "unclear",
+                "body_region": "Not applicable",
+                "modality": "Unclear Document Payload",
+                "report_type": None,
+                "certainty": "low",
+                "medical_type": "Unclear PDF Document",
+                "confidence": conf,
+                "message": "Unable to verify this file as a medical file. Please upload a clearer medical file.",
+                "is_pdf": True,
+                "extracted_text": text
+            }
+
+        text_lower = (text or "").lower()
+        if "eye" in text_lower or "retina" in text_lower or "fundus" in text_lower or "ophthalm" in text_lower or "eye" in fn_target.lower():
             reg, mod, rep = "Eye / Retina", "Ophthalmic Diagnostic PDF Report", "Retinal & Ophthalmic Report"
-        elif "brain" in text_lower or "head" in text_lower or "mri" in text_lower or "ct" in text_lower or "brain" in fn_lower:
+        elif "brain" in text_lower or "head" in text_lower or "mri" in text_lower or "ct" in text_lower or "brain" in fn_target.lower():
             reg, mod, rep = "Brain", "Neuroimaging PDF Report", "Brain MRI/CT Diagnostic Report"
-        elif "chest" in text_lower or "lung" in text_lower or "x-ray" in text_lower or "radiology" in text_lower or "chest" in fn_lower:
+        elif "chest" in text_lower or "lung" in text_lower or "x-ray" in text_lower or "radiology" in text_lower or "chest" in fn_target.lower():
             reg, mod, rep = "Chest / Lungs", "Radiology PDF Report", "Chest Radiology Report"
-        elif "skin" in text_lower or "derma" in text_lower or "lesion" in text_lower or "skin" in fn_lower:
+        elif "skin" in text_lower or "derma" in text_lower or "lesion" in text_lower or "skin" in fn_target.lower():
             reg, mod, rep = "Skin / Dermatology", "Dermatology PDF Report", "Skin Lesion Report"
-        elif "cbc" in text_lower or "blood" in text_lower or "hemoglobin" in text_lower or "blood" in fn_lower:
+        elif "cbc" in text_lower or "blood" in text_lower or "hemoglobin" in text_lower or "blood" in fn_target.lower():
             reg, mod, rep = "Blood & Hematology", "Clinical Laboratory PDF", "Blood Test Laboratory Report"
         elif "pathology" in text_lower or "biopsy" in text_lower or "tissue" in text_lower:
             reg, mod, rep = "Histopathology / Tissue", "Pathology PDF Report", "Histopathology Tissue Report"
@@ -232,17 +294,19 @@ class MedicalContentValidator:
 
         return {
             "is_medical": True,
+            "verification_state": "MEDICAL",
             "input_type": "medical_report",
             "body_region": reg,
             "modality": mod,
             "report_type": rep,
             "medical_type": f"{reg} ({rep})",
             "certainty": "high",
-            "confidence": 95.0,
+            "confidence": conf,
             "message": f"Medical PDF report ({rep}) verified successfully.",
             "is_pdf": True,
             "extracted_text": text
         }
+
 
 
     def _validate_image(self, image_path, original_filename=None):

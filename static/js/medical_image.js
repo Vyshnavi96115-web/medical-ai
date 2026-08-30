@@ -89,11 +89,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
 
             if (!response.ok || !result.success || !result.is_medical || result.medical_verified === false) {
-                // DISCARD NON-MEDICAL FILE IMMEDIATELY AT UPLOAD STEP
                 fileInput.value = "";
-                selectedFile.textContent = "File discarded: Non-medical image";
-                setText("bb84-status", "REJECTED");
-                message(analysisResult, `✕ NOT A MEDICAL IMAGE\n\nStatus: Upload rejected\nMessage: ${result.message || "Please upload a valid medical scan or medical report."}`, true);
+                const state = result.verification_state || "NON_MEDICAL";
+                const isUnclear = state === "UNCLEAR";
+
+                selectedFile.textContent = isUnclear ? "File discarded: Unclear medical content" : "File discarded: Non-medical file";
+                setText("bb84-status", isUnclear ? "UNCLEAR" : "REJECTED");
+
+                const alertHeader = isUnclear ? "⚠ UNABLE TO VERIFY MEDICAL CONTENT" : "✕ NON-MEDICAL FILE DETECTED";
+                const defaultMsg = isUnclear ? "Unable to verify this file as a medical file. Please upload a clearer medical file." : "Non-medical file detected. Please upload a valid medical file.";
+
+                message(analysisResult, `${alertHeader}\n\nStatus: Upload rejected\nMessage: ${result.message || defaultMsg}`, true);
                 hide(operationChoice);
                 hide(encryptionControls);
                 if (chooseEncrypt) chooseEncrypt.disabled = true;
@@ -104,11 +110,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const organDisplay = result.organ || result.body_region || "Unable to determine reliably";
             const modalityDisplay = result.modality || "Unable to determine reliably";
             const confidenceDisplay = result.certainty === "high" ? "HIGH" : (result.certainty === "medium" ? "MEDIUM" : "UNCERTAIN");
-            const statusMessage = (organDisplay === "Unable to determine reliably" || modalityDisplay === "Unable to determine reliably")
-                ? "Valid medical image — ready for quantum encryption"
-                : "Ready for quantum encryption";
+            const statusMessage = "Ready for quantum encryption";
 
-            let displayMsg = `✓ MEDICAL CONTENT VERIFIED\n\nFile: ${file.name}\nContent Type: ${result.content_type === "medical_report" ? "Medical Report Document" : "Medical Image"}\nOrgan / Region: ${organDisplay}\nModality: ${modalityDisplay}\nConfidence: ${confidenceDisplay}\n\nStatus: ${statusMessage}`;
+            let displayMsg = `✓ MEDICAL FILE VERIFIED\n\nFile: ${file.name}\nContent Type: ${result.medical_type || "Medical File"}\nOrgan / Region: ${organDisplay}\nModality: ${modalityDisplay}\nConfidence: ${confidenceDisplay}\n\nStatus: ${statusMessage}`;
 
             message(analysisResult, displayMsg);
             show(operationChoice);
@@ -116,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
             setText("bb84-status", "READY");
             setStage("upload");
             return true;
+
 
 
         } catch (error) {

@@ -50,28 +50,43 @@ class MedicalImageDetector:
         # Fast Visual Feature Screening (0MB RAM footprint for 512MB free tier servers)
         import numpy as np
         arr = np.array(image)
+        h, w, _ = arr.shape
         r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
-        color_diff = np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int)))
-        
-        # Non-medical high color saturation check
-        is_colorful = color_diff > 45.0
-        
+        color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
+
+        # Calculate Center-to-Periphery contrast (hallmark of ocular / eye scans)
+        center_h_start, center_h_end = int(h * 0.3), int(h * 0.7)
+        center_w_start, center_w_end = int(w * 0.3), int(w * 0.7)
+        center_mean = float(np.mean(arr[center_h_start:center_h_end, center_w_start:center_w_end]))
+        total_sum = float(np.sum(arr))
+        center_sum = float(np.sum(arr[center_h_start:center_h_end, center_w_start:center_w_end]))
+        periphery_count = float(h * w * 3 - (center_h_end - center_h_start) * (center_w_end - center_w_start) * 3)
+        periphery_mean = (total_sum - center_sum) / max(periphery_count, 1.0)
+        eye_contrast = abs(center_mean - periphery_mean)
+
+        is_colorful = color_diff > 35.0
+        is_eye_pattern = eye_contrast > 30.0 or "eye" in str(candidate_labels).lower() or "fundus" in str(candidate_labels).lower()
+
         results = []
         for label in candidate_labels:
             lbl_lower = label.lower()
             score = 0.05
-            if is_colorful and ("cartoon" in lbl_lower or "landscape" in lbl_lower or "selfie" in lbl_lower or "photograph of a pet" in lbl_lower or "everyday" in lbl_lower):
+
+            if "eye" in lbl_lower or "fundus" in lbl_lower or "ocular" in lbl_lower:
+                score = 0.88 if is_eye_pattern else 0.40
+            elif "skin" in lbl_lower or "dermoscopy" in lbl_lower or "lesion" in lbl_lower:
+                score = 0.75 if (is_colorful and not is_eye_pattern) else 0.20
+            elif is_colorful and ("cartoon" in lbl_lower or "landscape" in lbl_lower or "selfie" in lbl_lower or "photograph of a pet" in lbl_lower or "everyday" in lbl_lower):
                 score = 0.85
             elif not is_colorful and ("x-ray" in lbl_lower or "ct" in lbl_lower or "mri" in lbl_lower or "radiology" in lbl_lower or "scan" in lbl_lower or "document" in lbl_lower):
                 score = 0.75
             elif "brain" in lbl_lower or "chest" in lbl_lower or "spine" in lbl_lower:
                 score = 0.40
-            elif "skin" in lbl_lower or "dermoscopy" in lbl_lower or "eye" in lbl_lower:
-                score = 0.35 if color_diff < 120.0 else 0.10
             results.append({"label": label, "score": score})
-        
+
         results.sort(key=lambda x: x["score"], reverse=True)
         return results
+
 
     def detect_medical_image(self, image_path):
         return self.analyze(image_path)

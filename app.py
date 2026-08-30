@@ -58,9 +58,16 @@ medgemma_analyzer = MedGemmaAnalyzer()
 #
 # Later, this can be replaced with a database/cloud
 # session system for multiple patients.
-# ============================================================
+@app.after_request
+def add_cache_control_headers(response):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 
 medical_session = {
+
 
     "active": False,
 

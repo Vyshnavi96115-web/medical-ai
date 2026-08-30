@@ -281,8 +281,8 @@ class MedicalImageDetector:
             }
 
         # 6. Comprehensive Anatomical Keyword & Zero-Shot Vision Resolution
-        lower_ext_kws = ["leg", "knee", "bone", "femur", "tibia", "fibula", "ankle", "foot", "thigh", "hip", "lower_extremity", "extremity"]
-        upper_ext_kws = ["arm", "hand", "wrist", "elbow", "shoulder", "forearm", "radius", "ulna", "humerus", "upper_extremity"]
+        lower_ext_kws = ["leg", "knee", "bone", "femur", "tibia", "fibula", "ankle", "foot", "feet", "thigh", "hip", "lower_extremity", "extremity", "toe", "toes", "tarsal", "metatarsal", "calcaneus"]
+        upper_ext_kws = ["arm", "hand", "wrist", "elbow", "shoulder", "forearm", "radius", "ulna", "humerus", "finger", "fingers", "upper_extremity"]
         spine_kws = ["spine", "vertebrae", "cervical", "lumbar", "thoracic_spine", "neck"]
         abdomen_kws = ["abdomen", "pelvis", "stomach", "liver", "kidney", "renal", "hepat", "gastro"]
         brain_kws = ["brain", "head", "skull", "cerebral", "neuro"]
@@ -309,11 +309,11 @@ class MedicalImageDetector:
         if reg is None and self.classifier is not None:
             try:
                 anatomy_candidates = [
-                    "a leg X-ray, knee radiograph, or lower extremity bone scan",
-                    "an arm X-ray, hand radiograph, or upper extremity bone scan",
-                    "a chest X-ray radiograph or thoracic lung scan",
-                    "a brain MRI scan, head CT, or neuroimaging photograph",
-                    "an eye fundus photograph or retinal scan",
+                    "a foot X-ray, ankle radiograph, leg X-ray, knee radiograph, or lower extremity bone scan",
+                    "a hand X-ray, wrist radiograph, arm X-ray, elbow radiograph, or upper extremity bone scan",
+                    "a chest X-ray radiograph of lungs and heart",
+                    "a brain MRI scan, head CT, or neuroimaging scan",
+                    "an eye fundus photograph, retinal photo, or ophthalmic scan",
                     "a spinal X-ray or cervical lumbar vertebrae radiograph",
                     "an abdominal ultrasound or pelvic CT scan",
                     "a clinical skin photograph or dermoscopy scan",
@@ -323,21 +323,38 @@ class MedicalImageDetector:
                 top_label = v_res[0]["label"]
                 top_score = v_res[0]["score"]
 
-                if top_score > 0.40:
-                    if "leg" in top_label or "lower extremity" in top_label:
+                # Extract score for lower extremity & upper extremity candidates
+                score_dict = {item["label"]: item["score"] for item in v_res}
+                lower_score = score_dict.get(anatomy_candidates[0], 0.0)
+                upper_score = score_dict.get(anatomy_candidates[1], 0.0)
+                chest_score = score_dict.get(anatomy_candidates[2], 0.0)
+
+                # Extremity structural boost: if dark_ratio > 0.40 (isolated bone on dark background)
+                # and lower/upper extremity score is close to chest score, favor extremity over chest!
+                if dark_ratio > 0.40 and (lower_score > 0.20 or upper_score > 0.20):
+                    if lower_score >= chest_score * 0.70:
+                        top_label = anatomy_candidates[0]
+                        top_score = lower_score
+                    elif upper_score >= chest_score * 0.70:
+                        top_label = anatomy_candidates[1]
+                        top_score = upper_score
+
+                if top_score > 0.25:
+                    if any(w in top_label for w in ["foot", "ankle", "leg", "knee", "lower extremity"]):
                         reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
-                    elif "arm" in top_label or "upper extremity" in top_label:
+                    elif any(w in top_label for w in ["hand", "wrist", "arm", "elbow", "upper extremity"]):
                         reg, mod = "Upper Extremity / Arm", "X-Ray / Radiograph"
-                    elif "chest" in top_label or "lung" in top_label:
+                    elif any(w in top_label for w in ["chest", "lung"]):
                         reg, mod = "Chest / Lungs", "X-Ray / Radiograph"
-                    elif "brain" in top_label or "head" in top_label:
+                    elif any(w in top_label for w in ["brain", "head"]):
                         reg, mod = "Brain", "MRI / CT Scan"
-                    elif "eye" in top_label or "retinal" in top_label:
+                    elif any(w in top_label for w in ["eye", "retinal"]):
                         reg, mod = "Eye / Retina", "Retinal Fundus Photo"
-                    elif "spinal" in top_label or "vertebrae" in top_label:
+                    elif any(w in top_label for w in ["spinal", "vertebrae"]):
                         reg, mod = "Spine / Vertebrae", "X-Ray / Radiograph"
-                    elif "abdominal" in top_label or "pelvic" in top_label:
+                    elif any(w in top_label for w in ["abdominal", "pelvic"]):
                         reg, mod = "Abdomen / Pelvis", "CT / Ultrasound"
+
             except Exception as a_err:
                 print(f"[STAGE 1 DETECTOR] Zero-shot anatomy notice: {a_err}")
 

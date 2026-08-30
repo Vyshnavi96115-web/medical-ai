@@ -97,19 +97,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || "Analysis failed.");
 
-            if (!result.is_medical) {
+            if (!result.is_medical || result.medical_verified === false) {
                 setText("bb84-status", "REJECTED");
-                message(analysisResult, result.message, true);
+                message(analysisResult, `✕ NOT A MEDICAL IMAGE\nStatus: Upload rejected\nPlease upload a valid medical image or medical report.`, true);
                 hide(operationChoice);
                 hide(encryptionControls);
+                if (chooseEncrypt) chooseEncrypt.disabled = true;
                 return;
             }
 
-            message(analysisResult, `${result.type} verified successfully. Ready for quantum encryption.`);
+            if (chooseEncrypt) chooseEncrypt.disabled = false;
+            let displayMsg = `✓ MEDICAL CONTENT VERIFIED\nImage Type: ${result.type}\nModality: ${result.modality || 'Diagnostic Scan'}\nOrgan / Region: ${result.organ || 'Dynamic Medical Imaging'}\nConfidence: ${result.confidence || 'HIGH'}\n\n✓ Ready for quantum encryption`;
+            message(analysisResult, displayMsg);
             show(operationChoice);
             hide(encryptionControls);
             setText("bb84-status", "READY");
             setStage("upload");
+
         } catch (error) {
             setText("bb84-status", "ERROR");
             message(analysisResult, error.message, true);

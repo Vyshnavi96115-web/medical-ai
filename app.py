@@ -1038,36 +1038,26 @@ def detect_medical_image():
         # ----------------------------------------------------
 
         if not validation["is_medical"]:
-
             medical_session["active"] = False
-
             # Delete rejected file
-
             try:
-
                 os.remove(filepath)
-
             except Exception:
-
                 pass
 
-
             return jsonify({
-
                 "success": True,
-
                 "is_medical": False,
-
-                "type":
-                    validation["medical_type"],
-
-                "confidence":
-                    validation["confidence"],
-
-                "message":
-                    validation["message"]
-
+                "medical_verified": False,
+                "content_type": "non_medical",
+                "organ": None,
+                "modality": None,
+                "type": validation.get("medical_type", "Non-Medical Image"),
+                "confidence": 0.0,
+                "encryption_allowed": False,
+                "message": validation.get("message", "This image does not appear to be a medical image or medical report. Please upload a valid medical scan or medical report.")
             })
+
 
 
         # Reset session state on new file upload to prevent cross-request contamination
@@ -1097,39 +1087,24 @@ def detect_medical_image():
 
 
         return jsonify({
-
             "success": True,
-
             "is_medical": True,
-
-            "type":
-                validation["medical_type"],
-
-            "input_type":
-                validation.get("input_type", "medical_image"),
-
-            "body_region":
-                validation.get("body_region", "Unknown / Unable to determine"),
-
-            "modality":
-                validation.get("modality", "Medical Diagnostic Image"),
-
-            "report_type":
-                validation.get("report_type"),
-
-            "certainty":
-                validation.get("certainty", "medium"),
-
-            "confidence":
-                validation["confidence"],
-
-            "is_pdf":
-                validation.get("is_pdf", False),
-
-            "message":
-                validation["message"]
-
+            "medical_verified": True,
+            "is_pdf": validation.get("is_pdf", False),
+            "content_type": validation.get("input_type", "medical_image"),
+            "organ": validation.get("body_region", "Dynamic Medical Imaging"),
+            "modality": validation.get("modality", "Medical Diagnostic Image"),
+            "type": validation["medical_type"],
+            "input_type": validation.get("input_type", "medical_image"),
+            "body_region": validation.get("body_region", "Dynamic Medical Imaging"),
+            "report_type": validation.get("report_type"),
+            "certainty": validation.get("certainty", "high"),
+            "confidence": "HIGH" if validation.get("certainty") == "high" else "MEDIUM",
+            "encryption_allowed": True,
+            "message": validation.get("message", "Medical Content Verified. Ready for quantum encryption.")
         })
+
+
 
 
 

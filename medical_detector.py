@@ -53,16 +53,23 @@ class MedicalImageDetector:
         h, w, _ = arr.shape
         r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
         color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
-        is_colorful = color_diff > 35.0
+        is_colorful = color_diff > 18.0
 
         results = []
         for label in candidate_labels:
             lbl_lower = label.lower()
-            score = 0.50
-            if is_colorful and ("cartoon" in lbl_lower or "landscape" in lbl_lower or "selfie" in lbl_lower or "photograph of a pet" in lbl_lower or "everyday" in lbl_lower):
-                score = 0.85
-            elif not is_colorful and ("x-ray" in lbl_lower or "ct" in lbl_lower or "mri" in lbl_lower or "radiology" in lbl_lower or "scan" in lbl_lower or "document" in lbl_lower):
-                score = 0.75
+            if is_colorful:
+                if any(kw in lbl_lower for kw in ["cartoon", "landscape", "selfie", "pet", "animal", "everyday", "normal photograph", "portrait"]):
+                    score = 0.90
+                elif any(kw in lbl_lower for kw in ["dermoscopy", "skin", "histopathology", "clinical photograph"]):
+                    score = 0.60
+                else:
+                    score = 0.10
+            else:
+                if any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "scan", "document", "report", "microscopy", "ecg"]):
+                    score = 0.85
+                else:
+                    score = 0.15
             results.append({"label": label, "score": score})
 
         results.sort(key=lambda x: x["score"], reverse=True)
@@ -83,19 +90,16 @@ class MedicalImageDetector:
         # 1. SCREENING: Medical vs Non-Medical
         # ----------------------------------------------------
         screening_medical = [
-            "an X-ray, CT or MRI scan",
-            "a diagnostic radiology image or ultrasound",
+            "an X-ray, CT or MRI radiograph scan",
+            "a medical diagnostic scan or ultrasound",
             "a clinical photograph of skin, eye or body part",
-            "a fundus photograph or ophthalmology scan",
-            "a medical document or report",
-            "a histopathology tissue slide"
+            "a medical document or report"
         ]
         screening_non_medical = [
-            "a normal photograph of a pet or animal",
-            "a cartoon graphic or illustration",
-            "a landscape or nature photograph",
-            "a selfie or portrait photograph",
-            "an everyday non-medical object"
+            "a normal landscape or nature photograph",
+            "a photograph of an animal or pet",
+            "an everyday non-medical object or vehicle",
+            "a cartoon graphic or illustration"
         ]
 
         screening_results = self._classify_labels(
@@ -103,13 +107,31 @@ class MedicalImageDetector:
             candidate_labels=screening_medical + screening_non_medical
         )
 
+        import numpy as np
+        arr = np.array(image)
+        h, w, _ = arr.shape
+        r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
+        color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
+        is_colorful = color_diff > 35.0
+
         scores = {res["label"]: res["score"] for res in screening_results}
         max_med = max(scores.get(lbl, 0.0) for lbl in screening_medical)
         max_non_med = max(scores.get(lbl, 0.0) for lbl in screening_non_medical)
 
-        is_medical = (max_med >= 0.08 or max_med >= max_non_med * 0.60)
-        if max_non_med > 0.60 and max_non_med > max_med * 2.5:
-            is_medical = False
+        if not is_colorful:
+            is_medical = not (scores.get("a cartoon graphic or illustration", 0.0) > 0.34)
+        else:
+            is_medical = not (max_non_med > max_med * 1.20)
+
+
+
+
+
+
+
+
+
+
 
         if not is_medical:
             return {

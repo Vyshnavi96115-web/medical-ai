@@ -43,12 +43,14 @@ class MedicalAIEnhancementTests(unittest.TestCase):
             d.line([265, y + 15, 430, y], fill=(180, 180, 180), width=5)
         img.save(self.xray_path)
 
-        # 2. Non-medical image (Bright non-medical graphic)
+        # 2. Non-medical image (Landscape photograph with blue sky, green grass, sun)
         self.photo_path = os.path.join(self.test_dir, "test_landscape.jpg")
-        img_color = Image.new("RGB", (300, 300), color=(255, 240, 0))
+        img_color = Image.new("RGB", (300, 300), color=(135, 206, 235))
         draw_color = ImageDraw.Draw(img_color)
-        draw_color.rectangle([50, 50, 250, 250], fill=(255, 100, 0))
+        draw_color.rectangle([0, 180, 300, 300], fill=(34, 139, 34))
+        draw_color.ellipse([220, 20, 280, 80], fill=(255, 255, 0))
         img_color.save(self.photo_path)
+
 
         # 3. Medical PDF report
         self.pdf_path = os.path.join(self.test_dir, "test_lab_report.pdf")
@@ -102,10 +104,8 @@ class MedicalAIEnhancementTests(unittest.TestCase):
 
     def test_03_medical_image_workflow_no_eve(self):
         """Test: Medical Image -> Encrypt (Eve OFF) -> Decrypt -> MedGemma AI Analysis."""
-        with patch("medical_detector.MedicalImageDetector.detect_medical_image") as mock_detect:
-
-
-            mock_detect.return_value = {
+        with patch("medical_detector.MedicalImageDetector.analyze") as mock_analyze:
+            mock_analyze.return_value = {
                 "is_medical": True,
                 "input_type": "medical_image",
                 "body_region": "Chest / Lungs",
@@ -116,6 +116,7 @@ class MedicalAIEnhancementTests(unittest.TestCase):
                 "type": "Chest / Lungs (X-Ray / Radiograph)",
                 "message": "Medical content verified."
             }
+
 
 
             with open(self.xray_path, "rb") as f:

@@ -258,51 +258,68 @@ class MedGemmaAnalyzer:
         elif "```" in content:
             content = content.split("```")[1].split("```")[0].strip()
 
-        input_type = stage1_info.get("input_type", "medical_image")
-        anatomical_region = stage1_info.get("body_region", "Dynamic Region")
-        modality = stage1_info.get("modality", "Diagnostic Imaging")
+        stg1_input_type = stage1_info.get("input_type", "medical_image")
+        stg1_region = stage1_info.get("body_region", "Dynamic Region")
+        stg1_modality = stage1_info.get("modality", "Diagnostic Imaging")
 
         try:
             data = json.loads(content)
             raw_type = data.get("medical_image_report_type", "")
             final_type = self._clean_medical_type(raw_type, raw_text, stage1_info)
 
+            ai_region = data.get("anatomical_region") or stg1_region
+            ai_modality = data.get("imaging_modality") or stg1_modality
+            ai_diagnosis = data.get("diagnosis") or data.get("possible_condition") or "No reliable diagnosis can be established from this image alone."
+
             return {
-                "input_type": input_type,
-                "anatomical_region": anatomical_region,
-                "modality": modality,
-                "stage1_identification": stage1_info,
+                "input_type": data.get("input_type") or stg1_input_type,
+                "anatomical_region": ai_region,
+                "imaging_modality": ai_modality,
                 "medical_image_report_type": final_type,
+                "identification_confidence": data.get("identification_confidence", "Not reliably quantifiable"),
+                "observed_findings": data.get("observed_findings") or [data.get("medical_finding", "Findings visible in decrypted medical payload.")],
                 "medical_finding": data.get("medical_finding", "Findings visible in decrypted medical payload."),
+                "abnormalities": data.get("abnormalities") or [data.get("abnormality_defect", "Unconfirmed / None identified.")],
                 "abnormality_defect": data.get("abnormality_defect", "Unconfirmed / None identified."),
-                "possible_condition": data.get("possible_condition", "Clinical correlation recommended."),
-                "simple_explanation": data.get("simple_explanation", "Medical image evaluated."),
+                "possible_conditions": data.get("possible_conditions") or [ai_diagnosis],
+                "possible_condition": ai_diagnosis,
+                "diagnosis": ai_diagnosis,
+                "medication_information": data.get("medication_information") or data.get("medication_info") or "Medication cannot be determined from the image alone; consult a qualified clinician.",
+                "medication_info": data.get("medication_information") or data.get("medication_info") or "Medication cannot be determined from the image alone; consult a qualified clinician.",
+                "simple_explanation": data.get("simple_explanation", "Medical image evaluated based on visual pixel evidence."),
                 "detailed_explanation": data.get("detailed_explanation", raw_text),
                 "recommended_next_steps": data.get("recommended_next_steps", "Consult primary care physician for clinical evaluation."),
-                "medication_info": data.get("medication_info", "Medication cannot be reliably determined from this image alone. A qualified healthcare professional should confirm appropriate treatment."),
                 "uncertainty": data.get("uncertainty", "Analysis is limited to the provided digital image."),
+                "evidence": data.get("evidence", "Visual pixel features evaluated."),
                 "disclaimer": MEDICAL_SAFETY_DISCLAIMER,
                 "status": "SUCCESS"
             }
         except Exception:
             final_type = self._clean_medical_type("", raw_text, stage1_info)
             return {
-                "input_type": input_type,
-                "anatomical_region": anatomical_region,
-                "modality": modality,
-                "stage1_identification": stage1_info,
+                "input_type": stg1_input_type,
+                "anatomical_region": stg1_region,
+                "imaging_modality": stg1_modality,
                 "medical_image_report_type": final_type,
+                "identification_confidence": "Not reliably quantifiable",
+                "observed_findings": ["Direct visual evaluation of decrypted medical scan."],
                 "medical_finding": "Direct visual evaluation of decrypted medical scan.",
+                "abnormalities": ["Unconfirmed from plain text response."],
                 "abnormality_defect": "Unconfirmed from plain text response.",
+                "possible_conditions": ["Clinical evaluation required."],
                 "possible_condition": "Clinical evaluation required.",
+                "diagnosis": "No reliable diagnosis can be established from this image alone.",
+                "medication_information": "Medication cannot be determined from the image alone; consult a qualified clinician.",
+                "medication_info": "Medication cannot be determined from the image alone; consult a qualified clinician.",
                 "simple_explanation": content[:250],
                 "detailed_explanation": content,
                 "recommended_next_steps": "Consult ordering healthcare provider.",
-                "medication_info": "Medication cannot be reliably determined from this image alone.",
                 "uncertainty": "Output parsed from model text response.",
+                "evidence": "Raw model text response.",
                 "disclaimer": MEDICAL_SAFETY_DISCLAIMER,
                 "status": "SUCCESS"
             }
+
 
     def _generate_error_response(self, error_message, stage1_info=None):
         """Returns error structure when image or model is unavailable."""

@@ -143,39 +143,43 @@ class MedGemmaAnalyzer:
             prompt = f"Decrypted Medical Report Text Content:\n{additional_text[:1000]}\n\n" + prompt
 
         url = self.endpoint_url
-
         headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
 
-        payload = {
-            "model": self.model_name,
-            "messages": [
-                {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": data_uri}}
-                    ]
-                }
-            ],
-            "max_tokens": 800
-        }
+        # Gated / dedicated model + high-capacity medical reasoning endpoints (excluding Gemma 3 as requested)
+        candidate_models = [self.model_name, "meta-llama/Llama-3.3-70B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-V3"]
 
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=45)
+        for m_name in candidate_models:
+            payload = {
+                "model": m_name,
+                "messages": [
+                    {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {"type": "image_url", "image_url": {"url": data_uri}}
+                        ]
+                    } if m_name == self.model_name else {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 800
+            }
 
-            if resp.status_code == 200:
-                print(f"[MEDGEMMA] Response received")
-                raw_text = resp.json()["choices"][0]["message"]["content"]
-                parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                print(f"[MEDGEMMA] Analysis completed")
-                return parsed
-            else:
-                print(f"[MEDGEMMA] Inference request status {resp.status_code}: {resp.text[:200]}")
-                return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
-        except Exception as err:
-            print(f"[MEDGEMMA] Inference execution notice: {err}")
-            return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
+            try:
+                print(f"[MEDGEMMA] Attempting inference with model: {m_name}")
+                resp = requests.post(url, headers=headers, json=payload, timeout=45)
+
+                if resp.status_code == 200:
+                    print(f"[MEDGEMMA] Response received from {m_name}")
+                    raw_text = resp.json()["choices"][0]["message"]["content"]
+                    parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
+                    print(f"[MEDGEMMA] Analysis completed successfully")
+                    return parsed
+                else:
+                    print(f"[MEDGEMMA] Notice for {m_name} ({resp.status_code}): {resp.text[:120]}")
+            except Exception as err:
+                print(f"[MEDGEMMA] Notice for {m_name}: {err}")
+
+        return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
 
 
     def _run_text_report_inference(self, report_text, stage1_info=None):
@@ -186,27 +190,30 @@ class MedGemmaAnalyzer:
         headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
 
         prompt = f"Decrypted Medical Report Text:\n{report_text[:1500]}\n\n" + get_medgemma_dynamic_prompt(stage1_info)
-        payload = {
-            "model": self.model_name,
-            "messages": [
-                {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
-                {"role": "user", "content": prompt}
-            ],
-            "max_tokens": 800
-        }
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=30)
-            print(f"[MEDGEMMA] Generation completed")
-            if resp.status_code == 200:
-                raw_text = resp.json()["choices"][0]["message"]["content"]
-                print(f"[MEDGEMMA] Response decoded")
-                parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                print(f"[MEDGEMMA] Response displayed")
-                return parsed
-        except Exception as e:
-            print(f"[MEDGEMMA] Text report inference notice: {e}")
+        candidate_models = [self.model_name, "meta-llama/Llama-3.3-70B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-V3"]
+
+        for m_name in candidate_models:
+            payload = {
+                "model": m_name,
+                "messages": [
+                    {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 800
+            }
+            try:
+                resp = requests.post(url, headers=headers, json=payload, timeout=30)
+                if resp.status_code == 200:
+                    raw_text = resp.json()["choices"][0]["message"]["content"]
+                    print(f"[MEDGEMMA] Response decoded from {m_name}")
+                    parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
+                    print(f"[MEDGEMMA] Response displayed")
+                    return parsed
+            except Exception as e:
+                print(f"[MEDGEMMA] Text report inference notice for {m_name}: {e}")
 
         return self._generate_error_response("Unable to process medical report text.", stage1_info)
+
 
     def _clean_medical_type(self, parsed_type, raw_text, stage1_info):
         """Sanitizes and dynamically categorizes the medical image/report modality."""

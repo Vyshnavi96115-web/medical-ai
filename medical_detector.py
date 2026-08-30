@@ -91,21 +91,21 @@ class MedicalImageDetector:
         # 1. SCREENING: Medical vs Non-Medical
         # ----------------------------------------------------
         screening_medical = [
-            "a medical radiology X-ray scan or radiograph",
-            "a medical CT scan or MRI scan",
+            "an X-ray radiograph, CT scan, or MRI scan",
             "a medical ultrasound sonogram or echocardiogram",
-            "a clinical skin photograph or dermoscopy scan",
+            "a clinical photograph of skin, eye or body part",
+            "a clinical dermoscopy scan of skin lesion",
             "an ophthalmology retinal fundus scan of an eye retina",
             "a printed medical laboratory report document",
             "a microscopy histopathology tissue slide"
         ]
 
         screening_non_medical = [
-            "an anime character illustration, cartoon drawing, or manga artwork",
+            "an anime drawing, cartoon illustration, or graphic artwork",
             "a digital graphic wallpaper or poster artwork",
-            "a portrait, selfie, or photograph of a person",
-            "a normal landscape, nature, or building photograph",
-            "a photograph of an animal, pet, or food item",
+            "a selfie, portrait, or photograph of a person",
+            "a landscape, nature, or outdoor photograph",
+            "a photograph of an animal, pet, or food",
             "an everyday non-medical object, vehicle, or scene"
         ]
 
@@ -124,18 +124,14 @@ class MedicalImageDetector:
         scores = {res["label"]: res["score"] for res in screening_results}
         max_med = max(scores.get(lbl, 0.0) for lbl in screening_medical)
         max_non_med = max(scores.get(lbl, 0.0) for lbl in screening_non_medical)
+        top_label = screening_results[0]["label"]
 
-        s_anime = scores.get("an anime character illustration, cartoon drawing, or manga artwork", 0.0)
-        s_digital = scores.get("a digital graphic wallpaper or poster artwork", 0.0)
-        s_landscape = scores.get("a normal landscape, nature, or building photograph", 0.0)
-        s_animal = scores.get("a photograph of an animal, pet, or food item", 0.0)
-
-        if s_anime > 0.28 or s_digital > 0.28 or s_landscape > 0.28 or s_animal > 0.28:
-            is_medical = False
-        elif is_colorful:
-            is_medical = max_med >= 0.10
+        if is_colorful:
+            is_medical = (max_med >= max_non_med * 0.85) and (top_label not in screening_non_medical)
         else:
-            is_medical = True
+            is_medical = not (top_label in ["an anime drawing, cartoon illustration, or graphic artwork", "a landscape, nature, or outdoor photograph", "a digital graphic wallpaper or poster artwork"] and scores.get(top_label, 0.0) > 0.20)
+
+
 
 
 

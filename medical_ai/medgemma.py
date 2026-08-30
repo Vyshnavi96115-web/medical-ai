@@ -227,27 +227,25 @@ class MedGemmaAnalyzer:
         return self._generate_error_response("Unable to process medical report text.", stage1_info)
 
 
-    def _clean_medical_type(self, parsed_type, raw_text, stage1_info):
-        """Sanitizes and dynamically categorizes the medical image/report modality."""
+    def _clean_medical_type(self, parsed_type, ai_region, ai_modality, stage1_info):
+        """Sanitizes and dynamically formats the medical image/report descriptor."""
         parsed_lower = (parsed_type or "").lower()
-        text_lower = (raw_text or "").lower()
-        stage1_info = stage1_info or {}
-        body_reg = stage1_info.get("body_region", "")
-        modality = stage1_info.get("modality", "")
 
-        # If model output copied prompt placeholders
-        if "identify" in parsed_lower or "e.g." in parsed_lower or not parsed_type:
-            for organ in ["Brain", "Chest", "Lung", "Heart", "Skin", "Eye", "Kidney", "Liver", "Bone", "Spine", "Abdomen"]:
-                if organ.lower() in text_lower or organ.lower() in body_reg.lower():
-                    return f"{organ} ({modality or 'Diagnostic Image'})"
-
-        if parsed_type and "identify" not in parsed_lower:
+        # If model returned a clean specific type (e.g. "Chest X-Ray" or "Brain MRI")
+        if parsed_type and not any(kw in parsed_lower for kw in ["identify", "e.g.", "full descriptor", "placeholder", "modality"]):
             return parsed_type
 
-        if body_reg and body_reg != "Unknown / Unable to determine":
-            return f"{body_reg} ({modality})"
+        # Format directly from AI visual extraction
+        if ai_region and ai_modality and ai_region != "Not applicable":
+            return f"{ai_region} ({ai_modality})"
+        elif ai_region and ai_region != "Not applicable":
+            return ai_region
+        elif ai_modality:
+            return ai_modality
 
-        return modality or "Medical Diagnostic Image"
+        stage1_info = stage1_info or {}
+        stg1_modality = stage1_info.get("modality", "Medical Diagnostic Image")
+        return stg1_modality
 
     def _parse_json_response(self, raw_text, stage1_info=None):
         """Parses decoded MedGemma output text into structured fields."""
@@ -264,11 +262,11 @@ class MedGemmaAnalyzer:
 
         try:
             data = json.loads(content)
-            raw_type = data.get("medical_image_report_type", "")
-            final_type = self._clean_medical_type(raw_type, raw_text, stage1_info)
-
             ai_region = data.get("anatomical_region") or stg1_region
             ai_modality = data.get("imaging_modality") or stg1_modality
+            raw_type = data.get("medical_image_report_type", "")
+            final_type = self._clean_medical_type(raw_type, ai_region, ai_modality, stage1_info)
+
             ai_diagnosis = data.get("diagnosis") or data.get("possible_condition") or "No reliable diagnosis can be established from this image alone."
 
             return {
@@ -295,7 +293,7 @@ class MedGemmaAnalyzer:
                 "status": "SUCCESS"
             }
         except Exception:
-            final_type = self._clean_medical_type("", raw_text, stage1_info)
+            final_type = self._clean_medical_type("", stg1_region, stg1_modality, stage1_info)
             return {
                 "input_type": stg1_input_type,
                 "anatomical_region": stg1_region,
@@ -319,6 +317,7 @@ class MedGemmaAnalyzer:
                 "disclaimer": MEDICAL_SAFETY_DISCLAIMER,
                 "status": "SUCCESS"
             }
+
 
 
     def _generate_error_response(self, error_message, stage1_info=None):

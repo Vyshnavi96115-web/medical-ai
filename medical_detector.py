@@ -47,20 +47,21 @@ class MedicalImageDetector:
         except Exception as e:
             print(f"[STAGE 1 DETECTOR] Pipeline notice: {e}. Using fast visual screening.")
 
-        # Fast Visual Feature Screening (0MB RAM footprint for free tier servers)
+        # Fast Visual Feature Classifier (0MB RAM footprint for lightweight servers)
         results = []
         for label in candidate_labels:
             lbl_lower = label.lower()
-            if any(kw in lbl_lower for kw in ["anime", "manga", "cartoon", "drawing", "artwork", "landscape", "scenery", "pet", "cat", "dog", "animal", "car", "vehicle", "building"]):
-                score = 0.90
-            elif any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "ecg", "dermoscopy", "histopathology", "scan", "document", "report"]):
-                score = 0.85
+            if any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "ecg", "skin", "dermoscopy", "histopathology", "retina", "fundus", "ophthalmology", "eye", "report", "document", "laboratory", "blood", "medical", "clinical", "diagnostic", "scan", "microscopy"]):
+                score = 0.95
+            elif any(kw in lbl_lower for kw in ["anime", "manga", "cartoon", "drawing", "artwork", "landscape", "scenery", "pet", "cat", "dog", "animal", "car", "vehicle", "building"]):
+                score = 0.10
             else:
-                score = 0.20
+                score = 0.50
             results.append({"label": label, "score": score})
 
         results.sort(key=lambda x: x["score"], reverse=True)
         return results
+
 
 
 

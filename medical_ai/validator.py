@@ -139,33 +139,56 @@ class MedicalContentValidator:
     def _validate_video(self, video_path, original_filename=None):
         """Validate medical ultrasound/endoscopy video clips using MedGemma verification."""
         fn_target = original_filename or video_path
+        fn_lower = fn_target.lower()
+
+        # Filename Non-Medical Indicator Check
+        non_med_video_kws = ["movie", "film", "anime", "cartoon", "trailer", "gameplay", "tiktok", "vlog", "vimeo", "youtube", "cinema", "show", "travel", "vacation", "trip", "song", "music", "dance", "cat", "dog", "car", "sports", "game", "wedding", "party", "funny", "family", "personal", "nature"]
+        med_video_kws = ["ultrasound", "echo", "echocardiogram", "endoscopy", "laparoscopy", "doppler", "cardiac", "motion", "scan", "video", "clip", "recording", "surgery", "clinic", "hospital", "medical", "patient", "procedure", "colonoscopy", "angioplasty", "fluoroscopy"]
+
+        is_non_med_fn = any(kw in fn_lower for kw in non_med_video_kws) and not any(kw in fn_lower for kw in med_video_kws)
+        if is_non_med_fn:
+            return {
+                "is_medical": False,
+                "verification_state": "NON_MEDICAL",
+                "input_type": "non_medical",
+                "body_region": "Not applicable",
+                "modality": "Non-medical Video",
+                "report_type": None,
+                "certainty": "high",
+                "medical_type": "Non-Medical Video",
+                "confidence": 95.0,
+                "message": "Non-medical file detected. Please upload a valid medical file.",
+                "is_pdf": False,
+                "extracted_text": ""
+            }
 
         grid_img = None
-        try:
-            cap = cv2.VideoCapture(video_path)
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            if total_frames > 0:
-                indices = [int(total_frames * i / 6) for i in range(6)]
-                extracted_frames = []
-                for idx in indices:
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
-                    ret, frame = cap.read()
-                    if ret and frame is not None:
-                        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                        pil_f = Image.fromarray(rgb).resize((250, 250))
-                        extracted_frames.append(pil_f)
-                cap.release()
+        if cv2 is not None:
+            try:
+                cap = cv2.VideoCapture(video_path)
+                total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                if total_frames > 0:
+                    indices = [int(total_frames * i / 6) for i in range(6)]
+                    extracted_frames = []
+                    for idx in indices:
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+                        ret, frame = cap.read()
+                        if ret and frame is not None:
+                            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                            pil_f = Image.fromarray(rgb).resize((250, 250))
+                            extracted_frames.append(pil_f)
+                    cap.release()
 
-                if len(extracted_frames) == 6:
-                    grid_img = Image.new("RGB", (750, 500), color=(0, 0, 0))
-                    grid_img.paste(extracted_frames[0], (0, 0))
-                    grid_img.paste(extracted_frames[1], (250, 0))
-                    grid_img.paste(extracted_frames[2], (500, 0))
-                    grid_img.paste(extracted_frames[3], (0, 250))
-                    grid_img.paste(extracted_frames[4], (250, 250))
-                    grid_img.paste(extracted_frames[5], (500, 250))
-        except Exception as vid_err:
-            print(f"[VALIDATOR] Video frame extraction notice: {vid_err}")
+                    if len(extracted_frames) == 6:
+                        grid_img = Image.new("RGB", (750, 500), color=(0, 0, 0))
+                        grid_img.paste(extracted_frames[0], (0, 0))
+                        grid_img.paste(extracted_frames[1], (250, 0))
+                        grid_img.paste(extracted_frames[2], (500, 0))
+                        grid_img.paste(extracted_frames[3], (0, 250))
+                        grid_img.paste(extracted_frames[4], (250, 250))
+                        grid_img.paste(extracted_frames[5], (500, 250))
+            except Exception as vid_err:
+                print(f"[VALIDATOR] Video frame extraction notice: {vid_err}")
 
         # MedGemma Verification
         ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(grid_img, media_type="video", additional_text=f"Video Filename: {os.path.basename(fn_target)}")
@@ -218,6 +241,7 @@ class MedicalContentValidator:
             "is_pdf": False,
             "extracted_text": ""
         }
+
 
     def _validate_pdf(self, pdf_path, original_filename=None):
         """Validate PDF document for medical report content using MedGemma verification."""

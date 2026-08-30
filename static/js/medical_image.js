@@ -220,7 +220,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const result = await postJson("/api/decrypt-medical-image", { quantum_key: keyInput.value });
-            if (result.image_url) {
+
+            if (result.is_pdf && result.pdf_url) {
+                const pdfIframe = document.getElementById("decrypted-pdf-iframe");
+                if (pdfIframe) pdfIframe.src = `${result.pdf_url}#toolbar=1&navpanes=1`;
+                if (pdfDownloadLink) pdfDownloadLink.href = result.pdf_url;
+                show(pdfViewContainer);
+                hide(imageContainer);
+            } else if (result.image_url) {
                 decryptedImage.src = `${result.image_url}?t=${Date.now()}`;
                 show(imageContainer);
             }
@@ -254,10 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 videoElem.style.display = "block";
             }
 
-            if (result.pdf_url && pdfDownloadLink) {
-                pdfDownloadLink.href = result.pdf_url;
-                show(pdfViewContainer);
-            }
 
             message(decryptionMessage, result.message, !result.decrypted);
 

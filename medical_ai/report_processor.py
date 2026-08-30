@@ -13,12 +13,19 @@ import pypdf
 class MedicalReportProcessor:
     """Processes PDF and image-based medical reports for AI analysis."""
 
-    MEDICAL_KEYWORDS = [
-        "patient", "diagnosis", "report", "blood", "laboratory", "lab", "x-ray", "mri",
-        "ct scan", "ultrasound", "pathology", "test", "cbc", "vital", "prescription",
-        "doctor", "hospital", "clinic", "specimen", "hemoglobin", "wbc", "rbc",
-        "platelet", "glucose", "cholesterol", "serum", "physician", "ecg", "eeg",
-        "radiology", "impression", "findings", "clinical", "history", "assessment"
+    EXPLICIT_MEDICAL_KEYWORDS = [
+        "patient", "diagnosis", "blood test", "laboratory", "lab report", "x-ray", "mri",
+        "ct scan", "ultrasound", "pathology", "cbc", "vital signs", "prescription",
+        "physician", "doctor", "hospital", "clinic", "specimen", "hemoglobin", "wbc", "rbc",
+        "platelet", "glucose", "cholesterol", "serum", "ecg", "eeg", "radiology",
+        "impression", "findings", "histopathology", "biopsy", "ophthalmology", "retina",
+        "dermatology", "cardiology", "renal panel", "liver function"
+    ]
+
+    NON_MEDICAL_KEYWORDS = [
+        "invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "resume",
+        "bank statement", "account number", "balance", "software engineer", "purchase order",
+        "payment receipt", "homework", "syllabus", "coursework", "flight ticket", "booking confirmation"
     ]
 
     def is_pdf(self, file_path):
@@ -47,8 +54,17 @@ class MedicalReportProcessor:
         if not text:
             return False
         text_lower = text.lower()
-        keyword_matches = sum(1 for kw in self.MEDICAL_KEYWORDS if kw in text_lower)
+
+        # Reject if non-medical keywords are present
+        if any(kw in text_lower for kw in self.NON_MEDICAL_KEYWORDS):
+            # Unless there is a strong concentration of explicit medical terms
+            med_count = sum(1 for kw in self.EXPLICIT_MEDICAL_KEYWORDS if kw in text_lower)
+            if med_count < 3:
+                return False
+
+        keyword_matches = sum(1 for kw in self.EXPLICIT_MEDICAL_KEYWORDS if kw in text_lower)
         return keyword_matches >= 2
+
 
     def pdf_to_preview_image(self, pdf_path, output_image_path):
         """

@@ -55,9 +55,15 @@ class MedGemmaAnalyzer:
                 img_format = img.format
                 img_mode = img.mode
 
-            print(f"[MEDGEMMA] Decryption successful")
-            print(f"[MEDGEMMA] Actual decrypted image loaded")
-            print(f"[MEDGEMMA] Image dimensions: {dimensions} (Format: {img_format}, Mode: {img_mode})")
+            file_size = os.path.getsize(decrypted_file_path)
+            print(f"[MEDGEMMA DEBUG] Original filename: {os.path.basename(original_file_path) if original_file_path else 'N/A'}")
+            print(f"[MEDGEMMA DEBUG] Decrypted path: {decrypted_file_path}")
+            print(f"[MEDGEMMA DEBUG] Decrypted exists: YES")
+            print(f"[MEDGEMMA DEBUG] Decrypted size: {file_size} bytes")
+            print(f"[MEDGEMMA DEBUG] Decrypted MIME: image/{str(img_format).lower()}")
+            print(f"[MEDGEMMA DEBUG] Image opened: YES")
+            print(f"[MEDGEMMA DEBUG] Image dimensions: {dimensions[0]}x{dimensions[1]}")
+            print(f"[MEDGEMMA DEBUG] Model: {self.model_name}")
 
             # Check SHA-256 hash match if original file path is provided (lossless verification)
             if original_file_path and os.path.exists(original_file_path) and not decrypted_file_path.endswith(".pdf"):
@@ -66,9 +72,9 @@ class MedGemmaAnalyzer:
                 with open(decrypted_file_path, "rb") as f2:
                     h_dec = hashlib.sha256(f2.read()).hexdigest()
                 if h_orig == h_dec:
-                    print(f"[MEDGEMMA] Lossless Decryption Verified: SHA-256 match ({h_dec[:12]}...)")
+                    print(f"[MEDGEMMA DEBUG] SHA-256 verified: YES ({h_dec[:12]}...)")
                 else:
-                    print(f"[MEDGEMMA] Note: SHA-256 hash differs due to image re-encoding or format conversion.")
+                    print(f"[MEDGEMMA DEBUG] SHA-256 verified: NO (File format re-encoded)")
 
             return dimensions
         except Exception as err:
@@ -98,7 +104,7 @@ class MedGemmaAnalyzer:
         stage1_info = stage1_info or {}
 
         display_context = stage1_info.get("body_region") or stage1_info.get("modality") or "Medical File"
-        print(f"[MEDGEMMA] Analysis request received for: {decrypted_file_path} (Context: {display_context})")
+        print(f"[MEDGEMMA DEBUG] Analysis request received for: {decrypted_file_path} (Context: {display_context})")
 
         if not os.path.exists(decrypted_file_path):
             return self._generate_error_response("Decrypted medical file not found.", stage1_info)
@@ -107,12 +113,12 @@ class MedGemmaAnalyzer:
 
         # Handle PDF report vs Image input
         if is_pdf:
-            print("[MEDGEMMA] Decryption successful")
-            print("[MEDGEMMA] Actual decrypted report loaded")
+            print("[MEDGEMMA DEBUG] Decryption successful: YES")
+            print("[MEDGEMMA DEBUG] Actual decrypted report loaded")
             pdf_text = self.report_processor.extract_text_from_pdf(decrypted_file_path)
             page_img = self.report_processor.render_pdf_page_to_image(decrypted_file_path, page_num=0)
             if page_img:
-                print(f"[MEDGEMMA] Image dimensions: {page_img.size}")
+                print(f"[MEDGEMMA DEBUG] Image dimensions: {page_img.size[0]}x{page_img.size[1]}")
                 return self._run_multimodal_inference(page_img, stage1_info, additional_text=pdf_text)
             else:
                 return self._run_text_report_inference(pdf_text, stage1_info)
@@ -122,7 +128,7 @@ class MedGemmaAnalyzer:
             self.verify_image_integrity(decrypted_file_path, original_file_path)
             pil_image = Image.open(decrypted_file_path).convert("RGB")
         except Exception as err:
-            print(f"[MEDGEMMA] Image load error: {err}")
+            print(f"[MEDGEMMA DEBUG] Image load error: {err}")
             return self._generate_error_response(str(err), stage1_info)
 
         # Run Real Multimodal Inference
@@ -130,13 +136,14 @@ class MedGemmaAnalyzer:
 
     def _run_multimodal_inference(self, pil_image, stage1_info, additional_text=""):
         """Executes real multimodal image + prompt inference via MedGemma model API."""
-        print(f"[MEDGEMMA] Sending image to MedGemma")
-
         buf = io.BytesIO()
         pil_image.save(buf, format="JPEG")
         img_bytes = buf.getvalue()
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
         data_uri = f"data:image/jpeg;base64,{img_b64}"
+
+        print(f"[MEDGEMMA DEBUG] Base64 size: {len(img_b64)} bytes")
+        print(f"[MEDGEMMA DEBUG] Sending actual decrypted image to MedGemma")
 
         prompt = get_medgemma_dynamic_prompt(stage1_info)
         if additional_text:
@@ -165,27 +172,28 @@ class MedGemmaAnalyzer:
             }
 
             try:
-                print(f"[MEDGEMMA] Attempting inference with model: {m_name}")
+                print(f"[MEDGEMMA DEBUG] API request started (Model: {m_name})")
                 resp = requests.post(url, headers=headers, json=payload, timeout=45)
+                print(f"[MEDGEMMA DEBUG] API response status: {resp.status_code}")
 
                 if resp.status_code == 200:
-                    print(f"[MEDGEMMA] Response received from {m_name}")
+                    print(f"[MEDGEMMA DEBUG] Response received: YES (Model: {m_name})")
                     raw_text = resp.json()["choices"][0]["message"]["content"]
                     parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                    print(f"[MEDGEMMA] Analysis completed successfully")
+                    print(f"[MEDGEMMA DEBUG] Analysis completed successfully")
                     return parsed
                 else:
-                    print(f"[MEDGEMMA] Notice for {m_name} ({resp.status_code}): {resp.text[:120]}")
+                    print(f"[MEDGEMMA DEBUG] Notice for {m_name} ({resp.status_code}): {resp.text[:120]}")
             except Exception as err:
-                print(f"[MEDGEMMA] Notice for {m_name}: {err}")
+                print(f"[MEDGEMMA DEBUG] Notice for {m_name}: {err}")
 
         return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
 
 
     def _run_text_report_inference(self, report_text, stage1_info=None):
         """Executes text-only report analysis when PDF rendering is unavailable."""
-        print(f"[MEDGEMMA] Sending text report + prompt to MedGemma")
-        print(f"[MEDGEMMA] Generation started")
+        print(f"[MEDGEMMA DEBUG] Sending text report + prompt to MedGemma")
+        print(f"[MEDGEMMA DEBUG] API request started")
         url = "https://router.huggingface.co/v1/chat/completions"
         headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
 
@@ -205,12 +213,11 @@ class MedGemmaAnalyzer:
                 resp = requests.post(url, headers=headers, json=payload, timeout=30)
                 if resp.status_code == 200:
                     raw_text = resp.json()["choices"][0]["message"]["content"]
-                    print(f"[MEDGEMMA] Response decoded from {m_name}")
+                    print(f"[MEDGEMMA DEBUG] Response received: YES (Model: {m_name})")
                     parsed = self._parse_json_response(raw_text, stage1_info=stage1_info)
-                    print(f"[MEDGEMMA] Response displayed")
                     return parsed
             except Exception as e:
-                print(f"[MEDGEMMA] Text report inference notice for {m_name}: {e}")
+                print(f"[MEDGEMMA DEBUG] Text report inference notice for {m_name}: {e}")
 
         return self._generate_error_response("Unable to process medical report text.", stage1_info)
 
@@ -225,39 +232,20 @@ class MedGemmaAnalyzer:
 
         # If model output copied prompt placeholders
         if "identify" in parsed_lower or "e.g." in parsed_lower or not parsed_type:
-            parsed_type = ""
-
-        # GENERAL ORGAN & MODALITY MATCHING
-        organs = {
-            "eye": ("Eye / Ophthalmology", ["eye", "ophthalmology", "iris", "pupil", "cornea", "sclera", "retina"]),
-            "skin": ("Skin / Dermatology", ["skin", "dermatology", "lesion", "plaque", "morphea", "rash"]),
-            "chest": ("Chest / Lungs", ["chest", "lung", "thoracic", "pulmonary", "radiograph"]),
-            "brain": ("Brain / Neurological", ["brain", "neuro", "cranial", "cerebral"]),
-            "heart": ("Heart / Cardiac", ["heart", "cardiac", "coronary", "ecg", "echocardiogram"]),
-            "kidney": ("Kidney / Renal", ["kidney", "renal", "nephro"]),
-            "liver": ("Liver / Hepatobiliary", ["liver", "hepatic", "gallbladder"]),
-            "bone": ("Bone / Skeletal", ["bone", "skeletal", "fracture", "femur", "tibia"]),
-            "knee": ("Knee / Joint", ["knee", "joint", "articular"]),
-            "spine": ("Spine / Vertebral", ["spine", "vertebra", "spinal", "lumbar"]),
-            "tissue": ("Histopathology Tissue", ["histopathology", "tissue slide", "biopsy", "microscopy"])
-        }
-
-        matched_organ = body_reg
-        for key, (label, keywords) in organs.items():
-            if any(kw in parsed_lower or kw in text_lower for kw in keywords):
-                matched_organ = label
-                break
+            for organ in ["Brain", "Chest", "Lung", "Heart", "Skin", "Eye", "Kidney", "Liver", "Bone", "Spine", "Abdomen"]:
+                if organ.lower() in text_lower or organ.lower() in body_reg.lower():
+                    return f"{organ} ({modality or 'Diagnostic Image'})"
 
         if parsed_type and "identify" not in parsed_lower:
             return parsed_type
 
-        if matched_organ and matched_organ != "Unknown / Unable to determine":
-            return f"{matched_organ} ({modality})"
+        if body_reg and body_reg != "Unknown / Unable to determine":
+            return f"{body_reg} ({modality})"
 
         return modality or "Medical Diagnostic Image"
 
     def _parse_json_response(self, raw_text, stage1_info=None):
-        """Parses decoded MedGemma output text into 9 structured fields."""
+        """Parses decoded MedGemma output text into structured fields."""
         stage1_info = stage1_info or {}
         content = raw_text.strip()
         if "```json" in content:
@@ -265,12 +253,19 @@ class MedGemmaAnalyzer:
         elif "```" in content:
             content = content.split("```")[1].split("```")[0].strip()
 
+        input_type = stage1_info.get("input_type", "medical_image")
+        anatomical_region = stage1_info.get("body_region", "Dynamic Region")
+        modality = stage1_info.get("modality", "Diagnostic Imaging")
+
         try:
             data = json.loads(content)
             raw_type = data.get("medical_image_report_type", "")
             final_type = self._clean_medical_type(raw_type, raw_text, stage1_info)
 
             return {
+                "input_type": input_type,
+                "anatomical_region": anatomical_region,
+                "modality": modality,
                 "stage1_identification": stage1_info,
                 "medical_image_report_type": final_type,
                 "medical_finding": data.get("medical_finding", "Findings visible in decrypted medical payload."),
@@ -287,6 +282,9 @@ class MedGemmaAnalyzer:
         except Exception:
             final_type = self._clean_medical_type("", raw_text, stage1_info)
             return {
+                "input_type": input_type,
+                "anatomical_region": anatomical_region,
+                "modality": modality,
                 "stage1_identification": stage1_info,
                 "medical_image_report_type": final_type,
                 "medical_finding": "Direct visual evaluation of decrypted medical scan.",
@@ -303,8 +301,12 @@ class MedGemmaAnalyzer:
 
     def _generate_error_response(self, error_message, stage1_info=None):
         """Returns error structure when image or model is unavailable."""
+        stage1_info = stage1_info or {}
         return {
-            "stage1_identification": stage1_info or {},
+            "input_type": stage1_info.get("input_type", "Unavailable"),
+            "anatomical_region": stage1_info.get("body_region", "Unavailable"),
+            "modality": stage1_info.get("modality", "Unavailable"),
+            "stage1_identification": stage1_info,
             "medical_image_report_type": "Unavailable",
             "medical_finding": "Error processing image payload.",
             "abnormality_defect": "Error",

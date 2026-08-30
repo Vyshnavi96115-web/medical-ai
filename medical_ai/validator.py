@@ -122,12 +122,12 @@ class MedicalContentValidator:
                 "certainty": "high",
                 "medical_type": "Non-Medical Document",
                 "confidence": conf,
-                "message": f"Non-medical file detected. MedGemma AI analyzed the PDF content and determined it is not a medical file.",
+                "message": "Non-medical PDF detected. Please upload a valid medical PDF.",
                 "is_pdf": True,
                 "extracted_text": text
             }
 
-        # 4. Determine Exact Organ Region & Document Type from MedGemma AI & Vision & Text
+        # 4. Determine Exact Organ Region & Document Type from AI & Vision & Text
         if medgemma_organ and medgemma_organ != "Not applicable":
             reg = medgemma_organ
             rep = medgemma_doc_type or f"{reg} Diagnostic Report"
@@ -143,8 +143,8 @@ class MedicalContentValidator:
                 reg, mod, rep = "Brain", "Neuroimaging PDF Report", "Brain MRI/CT Diagnostic Report"
             elif any(kw in combined_text for kw in ["chest", "lung", "x-ray", "radiology", "thoracic", "pulmonary"]):
                 reg, mod, rep = "Chest / Lungs", "Radiology PDF Report", "Chest Radiology Report"
-            elif any(kw in combined_text for kw in ["knee", "bone", "joint", "fracture", "ortho"]):
-                reg, mod, rep = "Knee / Joint", "Orthopedic PDF Report", "Knee & Bone Radiography Report"
+            elif any(kw in combined_text for kw in ["knee", "leg", "bone", "joint", "fracture", "ortho"]):
+                reg, mod, rep = "Lower Extremity / Leg", "Orthopedic PDF Report", "Knee & Bone Radiography Report"
             elif any(kw in combined_text for kw in ["skin", "derma", "lesion", "cutaneo"]):
                 reg, mod, rep = "Skin / Dermatology", "Dermatology PDF Report", "Skin Lesion Report"
             elif any(kw in combined_text for kw in ["cbc", "blood", "hemoglobin", "wbc", "rbc", "platelet", "glucose", "cholesterol"]):
@@ -166,10 +166,11 @@ class MedicalContentValidator:
             "medical_type": f"{reg} ({rep})",
             "certainty": "high",
             "confidence": conf,
-            "message": f"Medical PDF report ({rep}) verified successfully by MedGemma AI.",
+            "message": f"Medical PDF report ({rep}) verified successfully.",
             "is_pdf": True,
             "extracted_text": text
         }
+
 
 
 

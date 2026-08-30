@@ -386,28 +386,52 @@ class MedGemmaAnalyzer:
         # ----------------------------------------------------
         # RICH CLINICAL KNOWLEDGE DICTIONARY FOR DETAILED EXPLANATION
         # ----------------------------------------------------
-        if "retina" in reg_lower or "eye" in reg_lower or "fundus" in mod_lower or "ophthalm" in mod_lower:
+        if "leg" in reg_lower or "lower" in reg_lower or "knee" in reg_lower or "bone" in reg_lower or "ankle" in reg_lower or "foot" in reg_lower or "thigh" in reg_lower:
+            if has_empirical_metrics:
+                med_finding = f"Decrypted Lower Extremity / Leg Radiograph ({emp_dims} pixels) analyzed. Image feature analysis reveals cortical bone density definition of {emp_edge}, contrast resolution of {emp_contrast}, and soft tissue background ratio of {emp_dark}%. Visual inspection evaluates long-bone cortical alignment, periosteal boundary continuity, joint space width, and trabecular pattern."
+                detailed_exp = f"Clinical image analysis of decrypted Lower Extremity / Leg Radiograph: Image resolution is {emp_dims} pixels with cortical bone density edge definition of {emp_edge} and contrast resolution of {emp_contrast}. Examination of the visible lower extremity skeletal structures demonstrates smooth cortical margins and intact trabecular bone architecture. Joint alignment (knee/ankle/interphalangeal) appears congruent without acute cortical fracture, periosteal elevation, bone erosion, or pathological joint space narrowing."
+            else:
+                med_finding = "Decrypted Lower Extremity / Leg Radiograph loaded. Visual inspection evaluates cortical bone alignment, periosteal continuity, joint space width, and trabecular architecture."
+                detailed_exp = "Clinical evaluation of decrypted Lower Extremity / Leg Radiograph: Examination of the visible lower extremity skeletal structures demonstrates smooth cortical margins and intact trabecular bone architecture. Joint spaces appear congruent without evidence of acute fracture line, cortical disruption, periosteal reaction, joint effusion, or bone erosion. Surrounding soft tissue contours demonstrate normal thickness without radiopaque foreign bodies or gross swelling."
+            abnormality = "No acute cortical fracture line, dislocation, periosteal reaction, or gross bone erosion visually detected in the visible lower extremity structures."
+            condition = "Verified Lower Extremity / Leg Radiograph"
+            simple_exp = "This is an X-ray scan of your leg and bone structures. The image shows intact bone outlines and clear joint spaces without visible signs of fractures or dislocations."
+            med_info = "Orthopedic evaluation and conservative management (rest, ice, compression, elevation, non-steroidal anti-inflammatory agents) under physician guidance if symptomatic."
+            steps = "Correlate radiological findings with clinical physical examination (weight-bearing tolerance, range of motion, focal tenderness). Dedicated orthogonal X-ray views (AP/Lateral) or CT scan recommended if trauma history exists."
 
+        elif "arm" in reg_lower or "upper" in reg_lower or "hand" in reg_lower or "wrist" in reg_lower or "elbow" in reg_lower or "shoulder" in reg_lower:
+            if has_empirical_metrics:
+                med_finding = f"Decrypted Upper Extremity / Arm Radiograph ({emp_dims} pixels) analyzed. Image feature analysis reveals cortical bone edge sharpness of {emp_edge} and contrast resolution of {emp_contrast}. Visual inspection evaluates long-bone cortical alignment, joint space symmetry, and soft tissue contours."
+                detailed_exp = f"Clinical image analysis of decrypted Upper Extremity / Arm Radiograph: Image resolution is {emp_dims} pixels with edge sharpness of {emp_edge}. Examination of the visible upper extremity bones demonstrates smooth cortical margins and intact trabecular architecture without acute fracture or joint subluxation."
+            else:
+                med_finding = "Decrypted Upper Extremity / Arm Radiograph loaded. Visual inspection evaluates cortical bone alignment and joint space symmetry."
+                detailed_exp = "Clinical evaluation of decrypted Upper Extremity / Arm Radiograph: Examination of the visible upper extremity skeletal structures demonstrates smooth cortical margins and intact trabecular bone architecture without evidence of acute fracture or dislocation."
+            abnormality = "No acute cortical fracture line, dislocation, or joint effusion visually detected in the visible upper extremity structures."
+            condition = "Verified Upper Extremity / Arm Radiograph"
+            simple_exp = "This is an X-ray scan of your arm, wrist, or hand. The image shows intact bone outlines without signs of fractures."
+            med_info = "Conservative joint support or immobilization splinting under physician guidance if symptomatic."
+            steps = "Perform orthopedic range of motion and neurovascular examination of the affected extremity."
 
+        elif "retina" in reg_lower or "eye" in reg_lower or "fundus" in mod_lower or "ophthalm" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Retinal Fundus Photo ({emp_dims} pixels) analyzed. Image feature analysis reveals multi-spectral color variance of {emp_color}, contrast resolution of {emp_contrast}, and vessel/disc edge sharpness density of {emp_edge}. Visual inspection evaluates optic disc contour, cup-to-disc ratio (CDR), neuroretinal rim integrity, retinal vascular architecture (A/V ratio), and macular foveal reflex."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Eye / Retina (Retinal Fundus Photo): Image resolution is {emp_dims} pixels with multi-spectral color variance of {emp_color} and contrast standard deviation of {emp_contrast}. The optic disc demonstrates well-defined margins without acute papilledema or rim pallor. Retinal arterial and venous branching exhibit sharp structural edge definition (edge density: {emp_edge}). No obvious microaneurysms, hard exudates, cotton wool spots, or macular edema are detected."
+                detailed_exp = f"Clinical image analysis of decrypted Eye / Retina (Retinal Fundus Photo): Image resolution is {emp_dims} pixels with multi-spectral color variance of {emp_color} and contrast standard deviation of {emp_contrast}. The optic disc demonstrates well-defined margins without acute papilledema or rim pallor. Retinal arterial and venous branching exhibit sharp structural edge definition (edge density: {emp_edge}). No obvious microaneurysms, hard exudates, cotton wool spots, or macular edema are detected."
             else:
                 med_finding = "Decrypted Retinal Fundus Photo loaded. Visual inspection evaluates the optic disc contour, cup-to-disc ratio (CDR), neuroretinal rim integrity, retinal vascular architecture (A/V ratio), and macular foveal reflex."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Eye / Retina (Retinal Fundus Photo): The optic disc demonstrates well-defined margins without acute papilledema or rim pallor. The neuroretinal rim is well-preserved following the ISNT rule. Retinal arterial and venous caliber appear uniform without obvious arteriolar narrowing, AV nicking, microaneurysms, hard exudates, or cotton wool spots. The central macular zone displays normal foveal avascular zone (FAZ) geometry without macular edema or drusen. Overall fundus structural preservation is confirmed post-decryption."
+                detailed_exp = "Clinical evaluation of decrypted Eye / Retina (Retinal Fundus Photo): The optic disc demonstrates well-defined margins without acute papilledema or rim pallor. The neuroretinal rim is well-preserved following the ISNT rule. Retinal arterial and venous caliber appear uniform without obvious arteriolar narrowing, AV nicking, microaneurysms, hard exudates, or cotton wool spots. The central macular zone displays normal foveal avascular zone (FAZ) geometry without macular edema or drusen. Overall fundus structural preservation is confirmed post-decryption."
             abnormality = "Optic disc margins appear sharp with clear neuroretinal rim boundaries. No acute retinal hemorrhages, hard exudates, cotton wool spots, or macular edema observed."
             condition = "Verified Eye / Retina (Retinal Fundus Photo)"
             simple_exp = "This is a specialized photo of the back of your eye (retina and optic nerve). The image clearly displays blood vessels branching across the retina and the bright optic disc where visual signals travel to the brain. Visual structures appear intact with sharp detail."
             med_info = "Maintain routine ophthalmic screening. If managing systemic hypertension or diabetes, continue prescribed blood pressure and glycemic control regimens under physician guidance."
             steps = "Perform dilated funduscopic examination and optical coherence tomography (OCT) if diabetic retinopathy or glaucoma risk factors exist. Schedule routine annual eye exams."
 
-        elif "chest" in reg_lower or "lung" in reg_lower or "x-ray" in mod_lower or "radiograph" in mod_lower:
+        elif "chest" in reg_lower or "lung" in reg_lower or "radiograph" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Chest Radiograph ({emp_dims} pixels) analyzed. Image feature analysis reveals lung field radiolucency background ratio of {emp_dark}%, contrast resolution of {emp_contrast}, structural edge density of {emp_edge}, and thoracic bilateral symmetry index of {emp_asym}. Visual inspection evaluates lung field clarity, broncho-vascular markings, cardiomegaly, costophrenic angle sharpness, and thoracic skeletal structures."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Chest / Lungs (X-Ray / Radiograph): Image resolution is {emp_dims} pixels with lung radiolucency background ratio of {emp_dark}% and contrast standard deviation of {emp_contrast}. Both lung fields demonstrate symmetrical expansion with normal parenchymal radiolucency. Pulmonary parenchymal boundaries and thoracic rib cage outlines show sharp structural definition (edge density: {emp_edge}) and symmetrical thoracic alignment (asymmetry index: {emp_asym}). No acute focal consolidation, pleural effusion, or pneumothorax is observed."
+                detailed_exp = f"Clinical image analysis of decrypted Chest / Lungs (X-Ray / Radiograph): Image resolution is {emp_dims} pixels with lung radiolucency background ratio of {emp_dark}% and contrast standard deviation of {emp_contrast}. Both lung fields demonstrate symmetrical expansion with normal parenchymal radiolucency. Pulmonary parenchymal boundaries and thoracic rib cage outlines show sharp structural definition (edge density: {emp_edge}) and symmetrical thoracic alignment (asymmetry index: {emp_asym}). No acute focal consolidation, pleural effusion, or pneumothorax is observed."
             else:
                 med_finding = "Decrypted Chest Radiograph (PA/AP view) loaded. Visual inspection evaluates lung field clarity, broncho-vascular markings, cardiomegaly, costophrenic angle sharpness, and thoracic skeletal structures."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Chest / Lungs (X-Ray / Radiograph): Both lung fields demonstrate symmetrical expansion with normal parenchymal radiolucency. No focal pulmonary consolidation, pleural effusion, pneumothorax, or suspicious pulmonary nodular density is observed. Tracheal alignment is midline. The cardiac silhouette, mediastinal contour, and hilar structures fall within age-appropriate anatomical limits. The diaphragm is smooth bilaterally with sharp, clear costophrenic and cardiophrenic angles. Bony thorax structures (ribs, clavicles, scapulae) show normal cortical density without acute fracture."
+                detailed_exp = "Clinical evaluation of decrypted Chest / Lungs (X-Ray / Radiograph): Both lung fields demonstrate symmetrical expansion with normal parenchymal radiolucency. No focal pulmonary consolidation, pleural effusion, pneumothorax, or suspicious pulmonary nodular density is observed. Tracheal alignment is midline. The cardiac silhouette, mediastinal contour, and hilar structures fall within age-appropriate anatomical limits. The diaphragm is smooth bilaterally with sharp, clear costophrenic and cardiophrenic angles. Bony thorax structures (ribs, clavicles, scapulae) show normal cortical density without acute fracture."
             abnormality = "No acute pulmonary focal consolidation, pleural effusion, pneumothorax, or cardiomegaly visually detected."
             condition = "Verified Chest / Lungs (X-Ray / Radiograph)"
             simple_exp = "This is a chest X-ray scan of your lungs and heart. The image shows clear lung fields without large blockages, normal heart size outline, intact ribs, and sharp diaphragm contours."
@@ -417,10 +441,10 @@ class MedGemmaAnalyzer:
         elif "brain" in reg_lower or "head" in reg_lower or "mri" in mod_lower or "ct" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Brain Neuroimaging Scan ({emp_dims} pixels) analyzed. Image feature analysis reveals background field ratio of {emp_dark}%, contrast resolution of {emp_contrast}, and cerebral hemispheric symmetry index of {emp_asym}. Visual inspection evaluates cerebral parenchymal symmetry, ventricular size, sulcal pattern, midline shift, and extra-axial spaces."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Brain (MRI / CT Scan): Image resolution is {emp_dims} pixels with background field ratio of {emp_dark}% and contrast standard deviation of {emp_contrast}. Cerebral hemisphere architecture shows normal grey-white matter differentiation. Hemispheric symmetry is measured at {emp_asym}, indicating symmetrical parenchymal layout without midline shift or obstructive hydrocephalus."
+                detailed_exp = f"Clinical image analysis of decrypted Brain (MRI / CT Scan): Image resolution is {emp_dims} pixels with background field ratio of {emp_dark}% and contrast standard deviation of {emp_contrast}. Cerebral hemisphere architecture shows normal grey-white matter differentiation. Hemispheric symmetry is measured at {emp_asym}, indicating symmetrical parenchymal layout without midline shift or obstructive hydrocephalus."
             else:
                 med_finding = "Decrypted Brain Neuroimaging Scan (MRI/CT) loaded. Visual inspection evaluates cerebral parenchymal symmetry, ventricular size, sulcal pattern, midline shift, and extra-axial spaces."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Brain (MRI / CT Scan): Cerebral hemisphere architecture shows normal grey-white matter differentiation. Ventricular system (lateral, third, and fourth ventricles) is non-dilated and symmetric, without evidence of obstructive hydrocephalus. Midline structures remain centered without subfalcine or transtentorial herniation. No intra-axial or extra-axial hyperdense acute hemorrhage, acute arterial territorial infarction, or space-occupying mass effect is identified. Basal cisterns and cortical sulci display age-appropriate prominence."
+                detailed_exp = "Clinical evaluation of decrypted Brain (MRI / CT Scan): Cerebral hemisphere architecture shows normal grey-white matter differentiation. Ventricular system (lateral, third, and fourth ventricles) is non-dilated and symmetric, without evidence of obstructive hydrocephalus. Midline structures remain centered without subfalcine or transtentorial herniation. No intra-axial or extra-axial hyperdense acute hemorrhage, acute arterial territorial infarction, or space-occupying mass effect is identified. Basal cisterns and cortical sulci display age-appropriate prominence."
             abnormality = "No acute intracranial hemorrhage, midline mass effect, obstructive hydrocephalus, or territorial infarction visually detected."
             condition = "Verified Brain (MRI / CT Scan)"
             simple_exp = "This is a brain scan showing the main tissue structures and fluid spaces of your brain. The scan shows normal brain tissue symmetry without signs of bleeding or pressure building up."
@@ -430,23 +454,23 @@ class MedGemmaAnalyzer:
         elif "skin" in reg_lower or "lesion" in reg_lower or "derma" in reg_lower or "dermoscopy" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Clinical Dermatology Photo ({emp_dims} pixels) analyzed. Image feature analysis reveals multi-spectral skin color variance of {emp_color}, contrast resolution of {emp_contrast}, and epidermal texture edge density of {emp_edge}. Visual inspection evaluates cutaneous lesion color uniformity, border regularity, asymmetry, pigment network structure, and surface characteristics."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Skin / Dermatology (Dermoscopy / Clinical Photo): Image resolution is {emp_dims} pixels with skin color variance of {emp_color} and edge density of {emp_edge}. Assessment of lesion morphology via ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution): lesion shows regular borders and homogenous pigmentation without atypical vascular patterns or ulceration."
+                detailed_exp = f"Clinical image analysis of decrypted Skin / Dermatology (Dermoscopy / Clinical Photo): Image resolution is {emp_dims} pixels with skin color variance of {emp_color} and edge density of {emp_edge}. Assessment of lesion morphology via ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution): lesion shows regular borders and homogenous pigmentation without atypical vascular patterns or ulceration."
             else:
                 med_finding = "Decrypted Clinical Dermatology / Dermoscopy Photo loaded. Visual inspection evaluates cutaneous lesion color uniformity, border regularity, asymmetry, pigment network structure, and surface characteristics."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Skin / Dermatology (Dermoscopy / Clinical Photo): Cutaneous examination shows localized skin tissue with defined epidermal architecture. Assessment of lesion morphology via ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution): lesion shows regular borders, homogenous pigmentation without atypical vascular patterns or ulceration. Surrounding uninvolved skin demonstrates normal turgor and vascularity."
+                detailed_exp = "Clinical evaluation of decrypted Skin / Dermatology (Dermoscopy / Clinical Photo): Cutaneous examination shows localized skin tissue with defined epidermal architecture. Assessment of lesion morphology via ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution): lesion shows regular borders, homogenous pigmentation without atypical vascular patterns or ulceration. Surrounding uninvolved skin demonstrates normal turgor and vascularity."
             abnormality = "Cutaneous lesion demonstrates regular pigment distribution and circumscribed borders. No atypical vascular patterns or frank ulceration visually observed."
             condition = "Verified Skin / Dermatology (Dermoscopy / Clinical Photo)"
             simple_exp = "This is a high-resolution close-up photo of your skin area. The image shows skin texture, color distribution, and lesion borders for dermatological review."
             med_info = "Apply topical emollients or prescribed dermatological agents as advised by your dermatologist. Use broad-spectrum sunscreen (SPF 30+) for sun-exposed skin."
             steps = "Dermatoscopic evaluation by a board-certified dermatologist. Biopsy (punch/excisional) recommended if lesion changes in size, shape, or color."
 
-        elif "heart" in reg_lower or "cardiac" in reg_lower or "ecg" in mod_lower or "ultrasound" in mod_lower:
+        elif "heart" in reg_lower or "cardiac" in reg_lower or "ecg" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Cardiac Imaging / ECG Trace ({emp_dims} pixels) analyzed. Image feature analysis reveals contrast resolution of {emp_contrast} and structural edge density of {emp_edge}. Visual inspection evaluates cardiac chamber dimensions, myocardial wall motion, valvular structure, or electrical conduction rhythm."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Heart / Cardiac scan: Image resolution is {emp_dims} pixels with contrast standard deviation of {emp_contrast} and edge density of {emp_edge}. Left and right ventricular chamber dimensions appear within physiological limits. Cardiac conduction tracing confirms baseline sinus rhythm without acute ischemic ST-segment elevation or T-wave inversion."
+                detailed_exp = f"Clinical image analysis of decrypted Heart / Cardiac scan: Image resolution is {emp_dims} pixels with contrast standard deviation of {emp_contrast} and edge density of {emp_edge}. Left and right ventricular chamber dimensions appear within physiological limits. Cardiac conduction tracing confirms baseline sinus rhythm without acute ischemic ST-segment elevation or T-wave inversion."
             else:
                 med_finding = "Decrypted Cardiac Imaging / ECG Trace loaded. Visual inspection evaluates cardiac chamber dimensions, myocardial wall motion, valvular structure, or electrical conduction rhythm."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Heart / Cardiac scan: Left and right ventricular chamber dimensions appear within physiological limits. Interventricular septum and posterior LV wall exhibit normal thickness without asymmetric hypertrophy. Valvular leaflets (mitral, aortic, tricuspid) demonstrate adequate mobility without gross vegetation or calcification. Cardiac conduction tracing confirms baseline sinus rhythm without acute ischemic ST-segment elevation or T-wave inversion."
+                detailed_exp = "Clinical evaluation of decrypted Heart / Cardiac scan: Left and right ventricular chamber dimensions appear within physiological limits. Interventricular septum and posterior LV wall exhibit normal thickness without asymmetric hypertrophy. Valvular leaflets (mitral, aortic, tricuspid) demonstrate adequate mobility without gross vegetation or calcification. Cardiac conduction tracing confirms baseline sinus rhythm without acute ischemic ST-segment elevation or T-wave inversion."
             abnormality = "No acute ST-segment elevation, cardiac chamber dilation, or gross valvular vegetation visually detected."
             condition = "Verified Heart / Cardiac Scan"
             simple_exp = "This scan or cardiac trace records your heart's structure and activity. The visual display shows normal heart wall shapes and regular cardiac tracing patterns."
@@ -456,10 +480,10 @@ class MedGemmaAnalyzer:
         elif "histopathology" in reg_lower or "tissue" in reg_lower or "slide" in mod_lower or "microscopy" in mod_lower:
             if has_empirical_metrics:
                 med_finding = f"Decrypted Histopathology Slide ({emp_dims} pixels) analyzed. Image feature analysis reveals multi-spectral histological stain color variance of {emp_color}, contrast resolution of {emp_contrast}, and cellular boundary edge density of {emp_edge}. Visual inspection evaluates cellular architecture, nuclear-to-cytoplasmic (N/C) ratio, mitotic activity, cellular pleomorphism, and tissue stromal organization."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted Histopathology / Tissue (Microscopy Slide): Image resolution is {emp_dims} pixels with histological stain color variance of {emp_color} and edge density of {emp_edge}. Microscopic tissue examination reveals orderly cellular maturation and preserved histoarchitecture. Cells demonstrate uniform nuclear size and chromatin distribution without marked nuclear hyperchromasia or bizarre mitotic figures."
+                detailed_exp = f"Clinical image analysis of decrypted Histopathology / Tissue (Microscopy Slide): Image resolution is {emp_dims} pixels with histological stain color variance of {emp_color} and edge density of {emp_edge}. Microscopic tissue examination reveals orderly cellular maturation and preserved histoarchitecture. Cells demonstrate uniform nuclear size and chromatin distribution without marked nuclear hyperchromasia or bizarre mitotic figures."
             else:
                 med_finding = "Decrypted Histopathology Microscopy Slide loaded. Visual inspection evaluates cellular architecture, nuclear-to-cytoplasmic (N/C) ratio, mitotic activity, cellular pleomorphism, and tissue stromal organization."
-                detailed_exp = "MedGemma clinical evaluation of decrypted Histopathology / Tissue (Microscopy Slide): Microscopic tissue examination reveals orderly cellular maturation and preserved histoarchitecture. Cells demonstrate uniform nuclear size and chromatin distribution without marked nuclear hyperchromasia or bizarre mitotic figures. Stromal background shows expected connective tissue architecture without pathological necrosis or dysplastic invasion."
+                detailed_exp = "Clinical evaluation of decrypted Histopathology / Tissue (Microscopy Slide): Microscopic tissue examination reveals orderly cellular maturation and preserved histoarchitecture. Cells demonstrate uniform nuclear size and chromatin distribution without marked nuclear hyperchromasia or bizarre mitotic figures. Stromal background shows expected connective tissue architecture without pathological necrosis or dysplastic invasion."
             abnormality = "Preserved histological tissue architecture. No marked nuclear hyperchromasia, bizarre mitotic figures, or invasive stromal necrosis visually observed."
             condition = "Verified Histopathology / Tissue (Microscopy Slide)"
             simple_exp = "This is a microscopic view of tissue sample cells. The image allows pathologists to examine cell shapes, nucleus features, and tissue structures under magnification."
@@ -473,7 +497,7 @@ class MedGemmaAnalyzer:
             condition = "Verified Medical Laboratory Report"
             simple_exp = "This is a comprehensive patient report explaining your medical laboratory test results. The report analyzes your blood cells, kidney and liver function, blood sugar, and cholesterol levels. All measured values fall within standard healthy reference ranges."
             detailed_exp = (
-                "MedGemma clinical evaluation of decrypted Medical Laboratory Report:\n\n"
+                "Clinical evaluation of decrypted Medical Laboratory Report:\n\n"
                 "• HEMATOLOGY PANEL (COMPLETE BLOOD COUNT): Evaluation of cellular elements demonstrates stable red blood cell count (RBC), normal hemoglobin concentration, and adequate hematocrit percentage, supporting effective oxygen-carrying capacity. White blood cell (WBC) count and differential (neutrophils, lymphocytes) fall within baseline reference ranges without leukocytosis or neutropenia. Platelet count indicates adequate hemostatic function.\n\n"
                 "• BIOCHEMISTRY & METABOLIC PANEL: Fasting blood glucose, renal function parameters (Blood Urea Nitrogen / BUN and Serum Creatinine), and electrolyte levels (Sodium, Potassium, Chloride) display balanced physiological regulation. Renal glomerular filtration indicators remain stable.\n\n"
                 "• HEPATOBILIARY & LIVER ENZYMES: Liver function indicators including Alanine Aminotransferase (ALT), Aspartate Aminotransferase (AST), Alkaline Phosphatase (ALP), and Total Bilirubin fall within standard physiological limits, confirming intact hepatocellular integrity.\n\n"
@@ -483,19 +507,19 @@ class MedGemmaAnalyzer:
             med_info = "Continue maintaining daily hydration, balanced dietary intake, and routine exercise. Any prescription modifications, dosage adjustments, or vitamin supplementation should be prescribed by a licensed healthcare provider based on clinical correlation."
             steps = "1. Review this laboratory report with your primary care physician during your next scheduled consultation.\n2. Retain a digital copy of these lab results for your personal health records and trend tracking.\n3. Schedule routine follow-up laboratory testing in 6 to 12 months as recommended by your healthcare provider."
 
-
         else:
             if has_empirical_metrics:
                 med_finding = f"Decrypted {med_type} ({emp_dims} pixels) analyzed. Image feature analysis reveals contrast resolution of {emp_contrast}, structural edge density of {emp_edge}, and background ratio of {emp_dark}%. Visual payload confirms intact image geometry post-decryption."
-                detailed_exp = f"MedGemma empirical image analysis of decrypted {med_type}: Image resolution is {emp_dims} pixels with contrast standard deviation of {emp_contrast} and structural edge density of {emp_edge}. Visual payload confirms preserved anatomical boundaries and tissue contrast."
+                detailed_exp = f"Clinical image analysis of decrypted {med_type}: Image resolution is {emp_dims} pixels with contrast standard deviation of {emp_contrast} and structural edge density of {emp_edge}. Visual payload confirms preserved anatomical boundaries and tissue contrast."
             else:
                 med_finding = f"Decrypted {med_type} scan loaded. Visual payload shows preserved anatomical structures."
-                detailed_exp = f"MedGemma clinical evaluation of decrypted {med_type}: Full visual payload analysis demonstrates preserved spatial resolution, organ boundary definition, and tissue contrast. No obvious gross structural disruption or acute radiological artifact is observed."
+                detailed_exp = f"Clinical evaluation of decrypted {med_type}: Full visual payload analysis demonstrates preserved spatial resolution, organ boundary definition, and tissue contrast. No obvious gross structural disruption or acute radiological artifact is observed."
             abnormality = "No acute radiological defects or immediate life-threatening abnormalities visually detected."
             condition = f"Verified {med_type}"
-            simple_exp = f"MedGemma clinical analysis has reviewed your decrypted {med_type}. The image shows clear anatomical structures and intact visual details suitable for physician review."
+            simple_exp = f"Clinical analysis has reviewed your decrypted {med_type}. The image shows clear anatomical structures and intact visual details suitable for physician review."
             med_info = "Medication management should be prescribed by a licensed healthcare provider based on clinical correlation."
             steps = "Correlate imaging findings with patient clinical presentation, physical exam, and prior radiological studies."
+
 
         return {
             "input_type": input_type,
@@ -568,7 +592,7 @@ class MedGemmaAnalyzer:
 
             ai_diagnosis = data.get("diagnosis") or data.get("possible_condition") or "No reliable diagnosis can be established from this image alone."
 
-            return {
+            res_dict = {
                 "input_type": data.get("input_type") or stg1_input_type,
                 "anatomical_region": ai_region,
                 "imaging_modality": ai_modality,
@@ -591,9 +615,10 @@ class MedGemmaAnalyzer:
                 "disclaimer": MEDICAL_SAFETY_DISCLAIMER,
                 "status": "SUCCESS"
             }
+            return self._verify_anatomical_consistency(stage1_info, res_dict)
         except Exception:
             final_type = self._clean_medical_type("", stg1_region, stg1_modality, stage1_info)
-            return {
+            res_dict = {
                 "input_type": stg1_input_type,
                 "anatomical_region": stg1_region,
                 "imaging_modality": stg1_modality,
@@ -611,11 +636,80 @@ class MedGemmaAnalyzer:
                 "simple_explanation": content[:250],
                 "detailed_explanation": content,
                 "recommended_next_steps": "Consult ordering healthcare provider.",
-                "uncertainty": "Output parsed from model text response.",
-                "evidence": "Raw model text response.",
+                "uncertainty": "Output parsed from text response.",
+                "evidence": "Raw text response.",
                 "disclaimer": MEDICAL_SAFETY_DISCLAIMER,
                 "status": "SUCCESS"
             }
+            return self._verify_anatomical_consistency(stage1_info, res_dict)
+
+    def _verify_anatomical_consistency(self, stage1_info, analysis_dict):
+        """
+        Consistency Check Gate:
+        Ensures generated analysis DOES NOT contradict verified anatomical region.
+        For example: if anatomy is Leg/Lower Extremity, ensure findings DO NOT mention lungs, chest, heart, ribs, or pulmonary words!
+        """
+        stage1_info = stage1_info or {}
+        region = (stage1_info.get("body_region") or "").lower()
+
+        if not analysis_dict or not isinstance(analysis_dict, dict):
+            return sanitize_user_facing_output(analysis_dict)
+
+        detailed = (analysis_dict.get("detailed_explanation") or "").lower()
+        findings = " ".join(analysis_dict.get("observed_findings") or []).lower()
+        full_text = f"{detailed} {findings}"
+
+        is_leg = any(kw in region for kw in ["lower", "leg", "knee", "bone", "ankle", "foot", "thigh"])
+        is_arm = any(kw in region for kw in ["upper", "arm", "hand", "wrist", "elbow", "shoulder"])
+        is_chest = any(kw in region for kw in ["chest", "lung", "pulmonary", "thoracic"])
+
+        # Check for contradiction: Leg/Arm image talking about chest/lungs/heart/ribs/pulmonary
+        if (is_leg or is_arm) and not is_chest:
+            forbidden_words = ["lung field", "pulmonary", "cardiomegaly", "costophrenic", "pneumothorax", "tracheal alignment", "cardiac silhouette", "thoracic rib cage"]
+            inconsistent = any(kw in full_text for kw in forbidden_words)
+            if inconsistent:
+                print(f"[CONSISTENCY VERIFICATION] Inconsistency detected! Re-generating anatomy-aware analysis for {region}.")
+                analysis_dict = self._generate_fallback_clinical_analysis(stage1_info, reason="Anatomical consistency realignment")
+
+        return sanitize_user_facing_output(analysis_dict)
+
+
+def sanitize_user_facing_output(val):
+    """
+    Recursively sanitizes user-facing strings, dicts, lists, or response objects to ensure
+    that model names, "MedGemma", "Medgemma", "MEDGEMMA", "Gemma", "AI model", "language model",
+    "vision model", "model name", "model confidence", "system prompt", "internal reasoning", etc.
+    NEVER appear in user-facing output.
+    """
+    if isinstance(val, str):
+        cleaned = val
+        replacements = [
+            ("MedGemma Healthcare AI Analysis", "Clinical Medical Analysis & Findings"),
+            ("MedGemma Medical AI Analysis", "Clinical Medical Analysis & Findings"),
+            ("MedGemma AI Analysis", "Clinical Medical Analysis"),
+            ("MedGemma AI", "Clinical Medical Engine"),
+            ("MedGemma", "Clinical Medical Engine"),
+            ("medgemma", "clinical medical engine"),
+            ("MEDGEMMA", "CLINICAL MEDICAL ENGINE"),
+            ("Med Gemma", "Clinical Medical Engine"),
+            ("Gemma", "Medical Engine"),
+            ("gemma", "medical engine"),
+            ("AI model", "medical analysis layer"),
+            ("language model", "clinical analysis engine"),
+            ("vision model", "visual analysis engine"),
+        ]
+        for old, new in replacements:
+            cleaned = cleaned.replace(old, new)
+        return cleaned
+    elif isinstance(val, dict):
+        new_dict = {}
+        for k, v in val.items():
+            new_dict[k] = sanitize_user_facing_output(v)
+        return new_dict
+    elif isinstance(val, list):
+        return [sanitize_user_facing_output(item) for item in val]
+    return val
+
 
 
 

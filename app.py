@@ -1737,7 +1737,8 @@ def decrypt_medical_image():
         )
 
 
-        return jsonify({
+        from medical_ai.medgemma import sanitize_user_facing_output
+        return jsonify(sanitize_user_facing_output({
             "success": True,
             "decrypted": True,
             "corrupted": False,
@@ -1749,8 +1750,9 @@ def decrypt_medical_image():
             "pdf_url": pdf_url,
             "is_pdf": is_pdf,
             "ai_analysis": ai_analysis,
-            "message": "Medical file decrypted successfully. MedGemma AI analysis completed."
-        })
+            "message": "Medical file decrypted successfully. Clinical medical analysis completed."
+        }))
+
 
 
 

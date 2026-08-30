@@ -280,26 +280,93 @@ class MedicalImageDetector:
                 "message": "ECG Trace verified successfully."
             }
 
-        # 6. Specific Organ Filename & Feature Keyword Resolution
-        if any(kw in fn_lower for kw in ["brain", "head"]):
-            reg, mod = "Brain", "MRI / CT Scan"
-        elif any(kw in fn_lower for kw in ["chest", "lung"]):
-            reg, mod = "Chest / Lungs", "X-Ray / Radiograph"
-        elif any(kw in fn_lower for kw in ["knee", "joint"]):
-            reg, mod = "Knee / Joint", "MRI Scan"
-        elif any(kw in fn_lower for kw in ["bone", "spine", "vertebrae"]):
+        # 6. Comprehensive Anatomical Keyword & Zero-Shot Vision Resolution
+        lower_ext_kws = ["leg", "knee", "bone", "femur", "tibia", "fibula", "ankle", "foot", "thigh", "hip", "lower_extremity", "extremity"]
+        upper_ext_kws = ["arm", "hand", "wrist", "elbow", "shoulder", "forearm", "radius", "ulna", "humerus", "upper_extremity"]
+        spine_kws = ["spine", "vertebrae", "cervical", "lumbar", "thoracic_spine", "neck"]
+        abdomen_kws = ["abdomen", "pelvis", "stomach", "liver", "kidney", "renal", "hepat", "gastro"]
+        brain_kws = ["brain", "head", "skull", "cerebral", "neuro"]
+        chest_kws = ["chest", "lung", "pulmonary", "thoracic", "rib"]
+        heart_kws = ["heart", "cardiac", "echo"]
+
+        reg, mod = None, None
+        if any(kw in fn_lower for kw in lower_ext_kws):
+            reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
+        elif any(kw in fn_lower for kw in upper_ext_kws):
+            reg, mod = "Upper Extremity / Arm", "X-Ray / Radiograph"
+        elif any(kw in fn_lower for kw in spine_kws):
             reg, mod = "Spine / Vertebrae", "X-Ray / Radiograph"
-        elif any(kw in fn_lower for kw in ["liver", "hepat"]):
-            reg, mod = "Liver / Hepatobiliary", "CT / Ultrasound"
-        elif any(kw in fn_lower for kw in ["kidney", "renal"]):
-            reg, mod = "Kidney / Renal", "Ultrasound / CT"
-        elif any(kw in fn_lower for kw in ["heart", "echo"]):
-            reg, mod = "Heart / Cardiac", "Ultrasound / Sonogram"
-        else:
+        elif any(kw in fn_lower for kw in abdomen_kws):
+            reg, mod = "Abdomen / Pelvis", "CT / Ultrasound"
+        elif any(kw in fn_lower for kw in brain_kws):
+            reg, mod = "Brain", "MRI / CT Scan"
+        elif any(kw in fn_lower for kw in chest_kws):
             reg, mod = "Chest / Lungs", "X-Ray / Radiograph"
+        elif any(kw in fn_lower for kw in heart_kws):
+            reg, mod = "Heart / Cardiac", "Ultrasound / Sonogram"
+
+        # If keyword resolution did not match, run zero-shot visual classifier across candidate anatomical labels
+        if reg is None and self.classifier is not None:
+            try:
+                anatomy_candidates = [
+                    "a leg X-ray, knee radiograph, or lower extremity bone scan",
+                    "an arm X-ray, hand radiograph, or upper extremity bone scan",
+                    "a chest X-ray radiograph or thoracic lung scan",
+                    "a brain MRI scan, head CT, or neuroimaging photograph",
+                    "an eye fundus photograph or retinal scan",
+                    "a spinal X-ray or cervical lumbar vertebrae radiograph",
+                    "an abdominal ultrasound or pelvic CT scan",
+                    "a clinical skin photograph or dermoscopy scan",
+                    "a non-medical general photograph"
+                ]
+                v_res = self.classifier(image, candidate_labels=anatomy_candidates)
+                top_label = v_res[0]["label"]
+                top_score = v_res[0]["score"]
+
+                if top_score > 0.40:
+                    if "leg" in top_label or "lower extremity" in top_label:
+                        reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
+                    elif "arm" in top_label or "upper extremity" in top_label:
+                        reg, mod = "Upper Extremity / Arm", "X-Ray / Radiograph"
+                    elif "chest" in top_label or "lung" in top_label:
+                        reg, mod = "Chest / Lungs", "X-Ray / Radiograph"
+                    elif "brain" in top_label or "head" in top_label:
+                        reg, mod = "Brain", "MRI / CT Scan"
+                    elif "eye" in top_label or "retinal" in top_label:
+                        reg, mod = "Eye / Retina", "Retinal Fundus Photo"
+                    elif "spinal" in top_label or "vertebrae" in top_label:
+                        reg, mod = "Spine / Vertebrae", "X-Ray / Radiograph"
+                    elif "abdominal" in top_label or "pelvic" in top_label:
+                        reg, mod = "Abdomen / Pelvis", "CT / Ultrasound"
+            except Exception as a_err:
+                print(f"[STAGE 1 DETECTOR] Zero-shot anatomy notice: {a_err}")
+
+        # If anatomy is STILL unconfirmed, inspect image visual structure (aspect ratio, dark bone ratio)
+        if reg is None:
+            # Check aspect ratio & contrast for leg/arm long-bone scans vs square chest/brain scans
+            aspect = float(h) / float(w) if w > 0 else 1.0
+            if aspect > 1.25 and dark_ratio > 0.45:
+                reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
+            elif color_diff < 15.0 and dark_ratio > 0.50:
+                reg, mod = "Other Medical Anatomy", "Diagnostic Scan"
+            else:
+                # NEVER default to Chest / Lungs! Mark as UNCLEAR if evidence is insufficient
+                return {
+                    "is_medical": False,
+                    "verification_state": "UNCLEAR",
+                    "input_type": "unclear",
+                    "body_region": "UNCLEAR",
+                    "modality": "UNKNOWN",
+                    "report_type": None,
+                    "certainty": "low",
+                    "confidence": 40.0,
+                    "type": "Unclear Medical Image",
+                    "message": "Unable to verify the anatomical region of this medical image. Please upload a clearer medical image."
+                }
 
         return {
             "is_medical": True,
+            "verification_state": "MEDICAL",
             "input_type": "medical_image",
             "body_region": reg,
             "modality": mod,

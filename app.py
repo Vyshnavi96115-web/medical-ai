@@ -191,12 +191,26 @@ def encrypt_emergency_record(record, quantum_key):
 
 
 def create_corrupted_image(input_path, qber=100, fully_corrupt=False):
+    if input_path.lower().endswith(".pdf"):
+        temp_img_path = input_path + "_temp_preview.png"
+        try:
+            validator.report_processor.pdf_to_preview_image(input_path, temp_img_path)
+            image = Image.open(temp_img_path).convert("RGB")
+            if os.path.exists(temp_img_path):
+                os.remove(temp_img_path)
+        except Exception:
+            image = Image.new("RGB", (600, 800), color=(255, 255, 255))
+    else:
+        try:
+            image = Image.open(input_path).convert("RGB")
+        except Exception:
+            image = Image.new("RGB", (600, 800), color=(255, 255, 255))
 
-    image = Image.open(input_path).convert("RGB")
     width, height = image.size
     corruption = max(0.0, min(float(qber) / 100, 1.0))
     complete_corruption = fully_corrupt or corruption >= 1.0
     randomizer = random.Random(f"{input_path}:{qber}:{fully_corrupt}")
+
 
     if complete_corruption:
         image = Image.effect_noise((width, height), 90).convert("RGB")

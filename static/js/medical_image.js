@@ -243,7 +243,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-            message(decryptionMessage, result.message, !result.decrypted);
+            if (result.corrupted) {
+                if (decryptionMessage) {
+                    decryptionMessage.textContent = `🛡️ ${result.message}`;
+                    decryptionMessage.className = "image-message warning";
+                    show(decryptionMessage);
+                }
+            } else {
+                message(decryptionMessage, result.message, !result.decrypted);
+            }
+
 
 
             // Populate MedGemma AI Analysis ONLY if decryption was successful and channel is secure

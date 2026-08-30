@@ -1651,7 +1651,7 @@ def decrypt_medical_image():
                     "image_url": "/uploads/" + corrupted_img_fn,
                     "pdf_url": "/uploads/" + corrupted_pdf_fn,
                     "is_pdf": True,
-                    "message": "Eavesdropping detected! Corrupted PDF document with garbled sentences displayed."
+                    "message": "Quantum Eavesdropping Intercepted! Channel compromised. Corrupted PDF document with garbled sentences displayed to protect privacy."
                 })
 
             return jsonify({
@@ -1663,8 +1663,9 @@ def decrypt_medical_image():
                 "eve": eve,
                 "security_status": "COMPROMISED",
                 "image_url": "/uploads/" + create_corrupted_image(orig_file, qber),
-                "message": "Eavesdropping or channel compromise was detected. Corrupted medical output will be displayed."
+                "message": "Quantum Eavesdropping Intercepted! Channel compromised. Corrupted medical payload displayed to protect privacy."
             })
+
 
 
 

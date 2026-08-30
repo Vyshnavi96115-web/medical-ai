@@ -973,9 +973,7 @@ def detect_medical_image():
 
         allowed_extensions = {
             ".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".tif", ".tiff",
-            ".pdf",
-            ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac",
-            ".mp4", ".avi", ".mov", ".webm", ".mkv"
+            ".pdf"
         }
 
         extension = os.path.splitext(file.filename)[1].lower()
@@ -984,8 +982,9 @@ def detect_medical_image():
             return jsonify({
                 "success": False,
                 "is_medical": False,
-                "message": "Unsupported file format. Please upload medical images (JPG, PNG), medical PDF reports, audio recordings (MP3, WAV), or video clips (MP4, WEBM)."
+                "message": "Unsupported file format. Please upload medical images (JPG, PNG) or medical PDF reports."
             }), 400
+
 
 
 
@@ -1638,16 +1637,11 @@ def decrypt_medical_image():
 
 
         # ----------------------------------------------------
-        # PDF / AUDIO / VIDEO / IMAGE PREVIEW PREPARATION
+        # PDF / IMAGE PREVIEW PREPARATION
         # ----------------------------------------------------
         ext_dec = os.path.splitext(output_path)[1].lower()
         is_pdf = ext_dec == ".pdf"
-        is_audio = ext_dec in {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"}
-        is_video = ext_dec in {".mp4", ".avi", ".mov", ".webm", ".mkv"}
-
         pdf_url = None
-        audio_url = None
-        video_url = None
 
         if is_pdf:
             pdf_url = "/uploads/" + output_filename
@@ -1658,12 +1652,6 @@ def decrypt_medical_image():
                 image_url = "/uploads/" + preview_filename
             except Exception:
                 image_url = "/uploads/" + output_filename
-        elif is_audio:
-            audio_url = "/uploads/" + output_filename
-            image_url = None
-        elif is_video:
-            video_url = "/uploads/" + output_filename
-            image_url = None
         else:
             image_url = "/uploads/" + output_filename
 
@@ -1674,7 +1662,7 @@ def decrypt_medical_image():
 
         stage1_info = medical_session.get("stage1_info") or {
             "is_medical": True,
-            "input_type": "medical_audio" if is_audio else ("medical_video" if is_video else "medical_image"),
+            "input_type": "medical_pdf" if is_pdf else "medical_image",
             "body_region": "Unknown / Unable to determine",
             "modality": medical_session.get("medical_type", "Medical File"),
             "report_type": None,
@@ -1698,14 +1686,11 @@ def decrypt_medical_image():
             "security_status": "SECURE",
             "image_url": image_url,
             "pdf_url": pdf_url,
-            "audio_url": audio_url,
-            "video_url": video_url,
             "is_pdf": is_pdf,
-            "is_audio": is_audio,
-            "is_video": is_video,
             "ai_analysis": ai_analysis,
             "message": "Medical file decrypted successfully. MedGemma AI analysis completed."
         })
+
 
 
 

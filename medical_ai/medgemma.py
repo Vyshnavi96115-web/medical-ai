@@ -125,30 +125,8 @@ class MedGemmaAnalyzer:
 
 
 
-        elif media_type == "audio":
-            med_speech_terms = ["doctor", "patient", "diagnosis", "symptoms", "pain", "chest", "breath", "blood pressure", "heart", "ecg", "medication", "prescription", "treatment", "clinic", "hospital", "auscultation", "stethoscope", "murmur", "wheeze"]
-            non_med_audio_terms = ["music", "song", "vlog", "pop", "rock", "dance", "game", "movie", "podcast", "entertainment", "ticket", "travel"]
-
-            med_count = sum(1 for kw in med_speech_terms if kw in text_lower)
-            non_med_count = sum(1 for kw in non_med_audio_terms if kw in text_lower)
-
-            if non_med_count > 0 and med_count < 2:
-                return {"state": "NON_MEDICAL", "confidence": 95.0, "reason": "Audio recording contains non-medical speech, music, or entertainment content."}
-            if med_count >= 2 or any(kw in text_lower for kw in ["stethoscope", "auscultation", "heart sound", "phonocardiogram", "breath sound"]):
-                return {"state": "MEDICAL", "confidence": 95.0, "reason": "Audio transcript contains authentic clinical consultation or auscultation recordings."}
-            return {"state": "UNCLEAR", "confidence": 45.0, "reason": "Unable to verify this audio as a medical file. Please upload a clearer medical file."}
-
-        elif media_type == "video":
-            if payload_input:
-                # Inspect frame grid metrics
-                arr = np.array(payload_input.convert("L"), dtype=np.float32)
-                std_contrast = float(np.std(arr))
-                if std_contrast < 5.0:
-                    return {"state": "UNCLEAR", "confidence": 40.0, "reason": "Video frames are blank, corrupted, or too low quality for medical verification."}
-                return {"state": "MEDICAL", "confidence": 92.0, "reason": "Video frame sequence demonstrates diagnostic imaging / procedural motion."}
-            return {"state": "UNCLEAR", "confidence": 45.0, "reason": "Unable to verify this video as a medical file. Please upload a clearer medical file."}
-
         return {"state": "MEDICAL", "confidence": 90.0, "reason": "Medical payload verified successfully."}
+
 
 
 
@@ -403,25 +381,8 @@ class MedGemmaAnalyzer:
         # ----------------------------------------------------
         # RICH CLINICAL KNOWLEDGE DICTIONARY FOR DETAILED EXPLANATION
         # ----------------------------------------------------
-        if input_type == "medical_audio" or "audio" in mod_lower or "stethoscope" in mod_lower or "auscultation" in mod_lower:
-            med_finding = "Decrypted Medical Auscultation / Stethoscope Audio payload loaded. Signal analysis evaluates acoustic rhythm, heart sound components (S1, S2, transient murmurs), and pulmonary breath sound frequencies."
-            abnormality = "Normal cardiac S1 and S2 acoustic tones without holosystolic murmur or gallop rhythm. Vesicular breath sound frequency distribution without coarse crackles or musical wheezes."
-            condition = "Verified Stethoscope / Auscultation Audio"
-            simple_exp = "This is a digital recording of your heart or lung sounds captured using a medical stethoscope. The audio playback shows regular heart beats (S1 and S2 tones) and clear breathing sound patterns without abnormal murmurs or raspy lung sounds."
-            detailed_exp = "MedGemma clinical evaluation of decrypted Medical Audio (Cardiac / Pulmonary Auscultation): Acoustic signal processing demonstrates rhythmic acoustic cycles. Cardiac phonocardiographic inspection shows distinct S1 and S2 heart sound components without prominent holosystolic murmur, click, or gallop rhythm. Pulmonary auscultation reveals clear vesicular breath sound frequency distribution across upper and lower fields without coarse crackles or musical wheezes."
-            med_info = "Maintain routine cardiovascular and respiratory health monitoring. If experiencing dyspnea or palpitations, consult your attending cardiologist or pulmonologist."
-            steps = "1. Clinical auscultation correlation during physical exam.\n2. Schedule 12-lead ECG or echocardiogram if cardiac murmurs or irregular rhythm develop.\n3. Perform spirometry or chest radiograph if respiratory wheezing or cough persists."
+        if "retina" in reg_lower or "eye" in reg_lower or "fundus" in mod_lower or "ophthalm" in mod_lower:
 
-        elif input_type == "medical_video" or "video" in mod_lower or "endoscopy" in mod_lower or "ultrasound clip" in mod_lower:
-            med_finding = "Decrypted Medical Video Clip (Dynamic Ultrasound / Endoscopy) loaded. Frame sequence analysis evaluates dynamic myocardial wall motion, valvular leaflet motility, blood flow Doppler turbulence, or luminal mucosal surface continuity."
-            abnormality = "Preserved dynamic frame sequence. No regional myocardial wall dyskinesia, acute valvular regurgitant jet, or active mucosal ulceration/bleeding visually observed."
-            condition = "Verified Medical Video (Ultrasound / Endoscopy Clip)"
-            simple_exp = "This is a motion video recording of an ultrasound scan or endoscopy procedure. The video sequence shows smooth movement of heart walls, valves, or organ linings without blockages or abnormal motion."
-            detailed_exp = "MedGemma clinical evaluation of decrypted Medical Video (Ultrasound / Endoscopy Clip): Dynamic frame-by-frame analysis confirms preserved spatial resolution and temporal frame rate. Ventricular wall motion exhibits symmetric systolic contraction and diastolic relaxation without regional dyskinesia. Valvular leaflet excursions demonstrate adequate mobility, and luminal mucosal surface shows smooth structural continuity without active bleeding, polypoid mass, or ulceration."
-            med_info = "Follow procedural recommendations provided by your gastroenterologist, cardiologist, or ultrasonographer."
-            steps = "1. Specialist review of full dynamic video sequence with color Doppler flow mapping.\n2. Correlate video findings with prior static ultrasound or endoscopic biopsy reports."
-
-        elif "retina" in reg_lower or "eye" in reg_lower or "fundus" in mod_lower or "ophthalm" in mod_lower:
 
             if has_empirical_metrics:
                 med_finding = f"Decrypted Retinal Fundus Photo ({emp_dims} pixels) analyzed. Image feature analysis reveals multi-spectral color variance of {emp_color}, contrast resolution of {emp_contrast}, and vessel/disc edge sharpness density of {emp_edge}. Visual inspection evaluates optic disc contour, cup-to-disc ratio (CDR), neuroretinal rim integrity, retinal vascular architecture (A/V ratio), and macular foveal reflex."

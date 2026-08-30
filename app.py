@@ -237,6 +237,72 @@ def create_corrupted_image(input_path, qber=100, fully_corrupt=False):
     return output_filename
 
 
+def create_corrupted_pdf(input_path, qber=100):
+    """
+    Generates a corrupted PDF document where clinical sentences,
+    medical findings, and text streams are garbled/corrupted
+    due to quantum eavesdropping / QBER interception errors.
+    """
+    try:
+        raw_text = validator.report_processor.extract_text_from_pdf(input_path)
+    except Exception:
+        raw_text = "CLINICAL LABORATORY MEDICAL REPORT FINDINGS"
+
+    if not raw_text or len(raw_text.strip()) < 10:
+        raw_text = "PATIENT DIAGNOSIS COMPLETE BLOOD COUNT RESULTS HEMOGLOBIN WBC PLATELET IMPRESSION"
+
+    corruption = max(0.2, min(float(qber) / 100.0, 1.0))
+    rand = random.Random(f"{input_path}:{qber}")
+    garbage_chars = ["#", "$", "%", "&", "@", "*", "!", "?", "X", "Z", "9", "0", "~", "^", "<", ">", "/", "\\"]
+
+    corrupted_lines = []
+    corrupted_lines.append("[COMPROMISED QUANTUM CHANNEL - EAVESDROPPER INTERCEPTION DETECTED]")
+    corrupted_lines.append(f"QBER Error Rate: {qber:.1f}% | AES-256-GCM Key Sifting Error")
+    corrupted_lines.append("--------------------------------------------------------------------------------")
+    corrupted_lines.append("")
+
+    for orig_line in raw_text.splitlines():
+        if not orig_line.strip():
+            continue
+        c_chars = []
+        for ch in orig_line:
+            if ch.isspace():
+                c_chars.append(ch)
+            elif rand.random() < corruption:
+                c_chars.append(rand.choice(garbage_chars))
+            else:
+                c_chars.append(ch)
+        c_line = "".join(c_chars)
+        if rand.random() < 0.35:
+            c_line += f" [CORRUPTED_{rand.randint(100, 999)}#ERR]"
+        corrupted_lines.append(c_line)
+
+    while len(corrupted_lines) < 15:
+        garbled_words = " ".join("".join(rand.choice(garbage_chars) for _ in range(rand.randint(4, 10))) for _ in range(rand.randint(5, 10)))
+        corrupted_lines.append(f"GARBLED_SENTENCE_{len(corrupted_lines)}: {garbled_words}")
+
+    img = Image.new("RGB", (800, 1000), color=(255, 245, 245))
+    draw = ImageDraw.Draw(img)
+
+    draw.rectangle([0, 0, 800, 60], fill=(220, 38, 38))
+    draw.text((20, 18), "⚠️ EAVESDROPPING DETECTED — CORRUPTED PDF DOCUMENT", fill=(255, 255, 255))
+
+    y = 80
+    for line in corrupted_lines[:32]:
+        draw.text((30, y), line[:85], fill=(185, 28, 28) if "COMPROMISED" in line or "CORRUPTED" in line else (30, 30, 30))
+        y += 26
+
+    for _ in range(400):
+        nx, ny = rand.randint(0, 799), rand.randint(0, 999)
+        draw.ellipse([nx, ny, nx + rand.randint(2, 6), ny + rand.randint(2, 6)], fill=(220, 38, 38))
+
+    output_filename = str(uuid.uuid4()) + "_corrupted.pdf"
+    output_path = os.path.join(UPLOAD_FOLDER, output_filename)
+    img.save(output_path, "PDF")
+    return output_filename
+
+
+
 # ============================================================
 # HEALTH CHECK FOR RENDER
 # ============================================================
@@ -1560,44 +1626,39 @@ def decrypt_medical_image():
         # ====================================================
 
         if eve or not secure:
+            print("\nCOMPROMISED BB84 SESSION")
+            orig_file = medical_session["original_file"]
+            is_pdf = os.path.splitext(orig_file)[1].lower() == ".pdf"
 
-            print(
-                "\nCOMPROMISED BB84 SESSION"
-            )
-
+            if is_pdf:
+                corrupted_pdf_fn = create_corrupted_pdf(orig_file, qber)
+                corrupted_img_fn = create_corrupted_image(orig_file, qber)
+                return jsonify({
+                    "success": True,
+                    "decrypted": False,
+                    "corrupted": True,
+                    "reason": "EAVESDROPPING_DETECTED",
+                    "qber": qber,
+                    "eve": eve,
+                    "security_status": "COMPROMISED",
+                    "image_url": "/uploads/" + corrupted_img_fn,
+                    "pdf_url": "/uploads/" + corrupted_pdf_fn,
+                    "is_pdf": True,
+                    "message": "Eavesdropping detected! Corrupted PDF document with garbled sentences displayed."
+                })
 
             return jsonify({
-
                 "success": True,
-
                 "decrypted": False,
-
                 "corrupted": True,
-
-                "reason":
-                    "EAVESDROPPING_DETECTED",
-
-                "qber":
-                    qber,
-
-                "eve":
-                    eve,
-
-                "security_status":
-                    "COMPROMISED",
-
-                "image_url":
-                    "/uploads/" + create_corrupted_image(
-                        medical_session["original_file"],
-                        qber
-                    ),
-
-                "message":
-                    "Eavesdropping or channel compromise "
-                    "was detected. Corrupted medical output "
-                    "will be displayed."
-
+                "reason": "EAVESDROPPING_DETECTED",
+                "qber": qber,
+                "eve": eve,
+                "security_status": "COMPROMISED",
+                "image_url": "/uploads/" + create_corrupted_image(orig_file, qber),
+                "message": "Eavesdropping or channel compromise was detected. Corrupted medical output will be displayed."
             })
+
 
 
         # ====================================================
@@ -1731,13 +1792,13 @@ def decrypt_medical_image():
     "/uploads/<filename>"
 )
 def uploaded_file(filename):
+    from flask import send_from_directory, make_response
+    res = make_response(send_from_directory(UPLOAD_FOLDER, filename))
+    if filename.lower().endswith(".pdf"):
+        res.headers["Content-Type"] = "application/pdf"
+        res.headers["Content-Disposition"] = "inline; filename=" + filename
+    return res
 
-    from flask import send_from_directory
-
-    return send_from_directory(
-        UPLOAD_FOLDER,
-        filename
-    )
 
 
 # ============================================================

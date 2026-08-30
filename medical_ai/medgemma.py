@@ -106,26 +106,24 @@ class MedGemmaAnalyzer:
         # Intelligent Context Verification Fallback:
         text_lower = (additional_text or "").lower()
         if media_type == "pdf":
-            med_terms = ["patient", "diagnosis", "blood", "cbc", "hemoglobin", "wbc", "platelet", "glucose", "cholesterol", "physician", "hospital", "clinic", "impression", "findings", "pathology", "specimen", "vital", "prescription", "ultrasound", "x-ray", "mri", "ct scan", "ecg", "retina", "ophthalmology", "dermatology", "cardiology"]
-            non_med_terms = ["invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "resume", "bank statement", "account number", "balance", "software engineer", "purchase order", "payment receipt", "homework", "syllabus", "coursework", "flight ticket", "tax", "bill"]
+            med_terms = ["patient", "diagnosis", "blood", "cbc", "hemoglobin", "wbc", "platelet", "glucose", "cholesterol", "physician", "hospital", "clinic", "impression", "findings", "pathology", "specimen", "vital", "prescription", "ultrasound", "x-ray", "mri", "ct scan", "ecg", "retina", "ophthalmology", "dermatology", "cardiology", "medical", "doctor", "lab", "radiology"]
+            non_med_terms = ["invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "resume", "bank statement", "account number", "balance", "software engineer", "purchase order", "payment receipt", "homework", "syllabus", "coursework", "flight ticket", "tax", "bill", "receipt", "agreement", "contract", "assignment", "manual", "guide"]
             
             med_matches = sum(1 for kw in med_terms if kw in text_lower)
             non_med_matches = sum(1 for kw in non_med_terms if kw in text_lower)
 
-            if non_med_matches > 0 and med_matches < 3:
-                return {"state": "NON_MEDICAL", "confidence": 95.0, "reason": "Document text/filename contains non-medical commercial, invoice, or financial content without clinical medical context."}
+            if non_med_matches > 0 and med_matches < 2:
+                return {"state": "NON_MEDICAL", "confidence": 95.0, "reason": "Document text/filename contains non-medical commercial, invoice, or non-clinical content."}
             if med_matches >= 2:
                 return {"state": "MEDICAL", "confidence": 95.0, "reason": "Document text contains verified clinical medical terminology and laboratory parameters."}
-            if med_matches == 0 and text_lower and not any(kw in text_lower for kw in ["report", "medical", "patient", "cbc", "hospital"]):
-                return {"state": "NON_MEDICAL", "confidence": 95.0, "reason": "Document text contains non-medical text without clinical medical terminology."}
+            if med_matches == 0:
+                return {"state": "NON_MEDICAL", "confidence": 95.0, "reason": "Document does not contain clinical medical report content or diagnostic terminology."}
             if payload_input and med_matches >= 1:
                 return {"state": "MEDICAL", "confidence": 90.0, "reason": "Rendered document visual layout verified."}
-            return {"state": "UNCLEAR", "confidence": 50.0, "reason": "Unable to verify this PDF as a medical file. Please upload a clearer medical file."}
-
-
-
+            return {"state": "NON_MEDICAL", "confidence": 90.0, "reason": "Unable to verify this PDF as a clinical medical file."}
 
         return {"state": "MEDICAL", "confidence": 90.0, "reason": "Medical payload verified successfully."}
+
 
 
 

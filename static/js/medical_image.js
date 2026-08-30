@@ -223,14 +223,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (result.is_pdf && result.pdf_url) {
                 const pdfIframe = document.getElementById("decrypted-pdf-iframe");
-                if (pdfIframe) pdfIframe.src = `${result.pdf_url}#toolbar=1&navpanes=1`;
+                if (pdfIframe) pdfIframe.src = `${result.pdf_url}?t=${Date.now()}#toolbar=1&navpanes=1`;
                 if (pdfDownloadLink) pdfDownloadLink.href = result.pdf_url;
                 show(pdfViewContainer);
-                hide(imageContainer);
+
+                if (result.image_url) {
+                    decryptedImage.src = `${result.image_url}?t=${Date.now()}`;
+                    show(imageContainer);
+                } else {
+                    hide(imageContainer);
+                }
             } else if (result.image_url) {
                 decryptedImage.src = `${result.image_url}?t=${Date.now()}`;
                 show(imageContainer);
+                hide(pdfViewContainer);
             }
+
 
 
 

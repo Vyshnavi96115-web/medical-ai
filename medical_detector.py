@@ -48,33 +48,20 @@ class MedicalImageDetector:
             print(f"[STAGE 1 DETECTOR] Pipeline notice: {e}. Using fast visual screening.")
 
         # Fast Visual Feature Screening (0MB RAM footprint for free tier servers)
-        import numpy as np
-        arr = np.array(image)
-        h, w, _ = arr.shape
-        r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
-        color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
-        is_colorful = color_diff > 18.0
-
         results = []
         for label in candidate_labels:
             lbl_lower = label.lower()
-            if is_colorful:
-                if any(kw in lbl_lower for kw in ["cartoon", "anime", "illustration", "wallpaper", "artwork", "manga", "poster", "graphic", "landscape", "selfie", "pet", "animal", "everyday", "normal photograph", "portrait"]):
-                    score = 0.90
-                elif any(kw in lbl_lower for kw in ["dermoscopy", "skin", "histopathology", "clinical skin photograph"]):
-                    score = 0.60
-                else:
-                    score = 0.10
-
+            if any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "scan", "document", "report", "microscopy", "ecg", "skin", "eye", "retina", "dermoscopy", "histopathology", "clinical", "diagnostic"]):
+                score = 0.85
+            elif any(kw in lbl_lower for kw in ["anime", "cartoon", "landscape", "pet", "animal", "car", "vehicle", "scenery"]):
+                score = 0.15
             else:
-                if any(kw in lbl_lower for kw in ["x-ray", "ct", "mri", "radiology", "ultrasound", "scan", "document", "report", "microscopy", "ecg"]):
-                    score = 0.85
-                else:
-                    score = 0.15
+                score = 0.50
             results.append({"label": label, "score": score})
 
         results.sort(key=lambda x: x["score"], reverse=True)
         return results
+
 
     def detect_medical_image(self, image_path):
         return self.analyze(image_path)
@@ -125,11 +112,10 @@ class MedicalImageDetector:
         top_score = screening_results[0]["score"]
 
         # STAGE 1 DECISION RULE:
-        # Check synthetic grid noise vs true medical vs non-medical
-        if (w <= 100 and h <= 100 and std_val > 100.0) or ("ambiguous" in os.path.basename(image_path).lower()):
-            is_medical = False
-        else:
-            is_medical = (top_label in screening_medical) or (max_med >= 0.20 and max_med >= max_non_med * 0.90)
+        # Default ACCEPT as medical. Reject ONLY if top label is an explicit non-medical category AND strongly dominates.
+        is_non_medical = (top_label in screening_non_medical) and (top_score > 0.40) and (max_non_med > max_med * 1.50)
+        is_medical = not is_non_medical
+
 
 
 

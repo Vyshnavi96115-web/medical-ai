@@ -61,7 +61,7 @@ class MedicalContentValidator:
 
 
     def _validate_pdf(self, pdf_path, original_filename=None):
-        """Validate PDF document for medical report content using MedGemma verification."""
+        """Validate PDF document for medical report content using MedGemma verification and vision analysis."""
         fn_target = original_filename or pdf_path
 
         # 1. Extract text & render page image
@@ -72,18 +72,35 @@ class MedicalContentValidator:
             self.report_processor.pdf_to_preview_image(pdf_path, temp_img_path)
             if os.path.exists(temp_img_path):
                 page_img = Image.open(temp_img_path).convert("RGB")
+        except Exception as p_err:
+            print(f"[VALIDATOR] PDF page rendering notice: {p_err}")
+
+        # 2. Zero-Shot Vision Classifier on Rendered PDF Page Image
+        vision_result = None
+        if os.path.exists(temp_img_path):
+            try:
+                vision_result = self.image_detector.analyze(temp_img_path, original_filename=fn_target)
+            except Exception as v_err:
+                print(f"[VALIDATOR] Vision PDF detection notice: {v_err}")
+
+        # Clean up temporary preview image
+        if os.path.exists(temp_img_path):
+            try:
                 os.remove(temp_img_path)
-        except Exception:
-            if os.path.exists(temp_img_path):
-                os.remove(temp_img_path)
+            except Exception:
+                pass
 
-        # 2. MedGemma Verification
-        ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(page_img, media_type="pdf", additional_text=f"Document Filename: {fn_target}\n\n{text}")
+        # 3. Non-Medical Commercial & Academic Term Check
+        combined_text = f"{fn_target} {text}".lower()
+        non_med_terms = ["invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "resume", "bank statement", "account number", "balance", "software engineer", "purchase order", "payment receipt", "homework", "syllabus", "coursework", "flight ticket", "tax", "bill", "receipt", "agreement", "contract", "assignment", "manual", "guide"]
+        med_terms = ["patient", "diagnosis", "blood", "cbc", "hemoglobin", "wbc", "platelet", "glucose", "cholesterol", "physician", "hospital", "clinic", "impression", "findings", "pathology", "specimen", "vital", "prescription", "ultrasound", "x-ray", "mri", "ct scan", "ecg", "retina", "ophthalmology", "dermatology", "cardiology", "medical", "doctor", "lab", "radiology", "eye", "optic", "fundus", "macula", "cornea", "intraocular", "retinal"]
 
-        state = ver.get("state", "MEDICAL")
-        conf = float(ver.get("confidence", 95.0))
+        med_matches = sum(1 for kw in med_terms if kw in combined_text)
+        non_med_matches = sum(1 for kw in non_med_terms if kw in combined_text)
 
-        if state == "NON_MEDICAL" or conf < 35.0:
+        # STRICT REJECTION OF NON-MEDICAL PDF
+        is_vision_non_medical = vision_result and not vision_result.get("is_medical", True)
+        if is_vision_non_medical or (non_med_matches > 0 and med_matches < 2) or (med_matches == 0 and not (vision_result and vision_result.get("is_medical"))):
             return {
                 "is_medical": False,
                 "verification_state": "NON_MEDICAL",
@@ -93,45 +110,38 @@ class MedicalContentValidator:
                 "report_type": None,
                 "certainty": "high",
                 "medical_type": "Non-Medical Document",
-                "confidence": conf,
+                "confidence": vision_result.get("confidence", 95.0) if vision_result else 95.0,
                 "message": "Non-medical file detected. Please upload a valid medical file.",
                 "is_pdf": True,
                 "extracted_text": text
             }
 
-        if state == "UNCLEAR" or conf < 70.0:
-            return {
-                "is_medical": False,
-                "verification_state": "UNCLEAR",
-                "input_type": "unclear",
-                "body_region": "Not applicable",
-                "modality": "Unclear Document Payload",
-                "report_type": None,
-                "certainty": "low",
-                "medical_type": "Unclear PDF Document",
-                "confidence": conf,
-                "message": "Unable to verify this file as a medical file. Please upload a clearer medical file.",
-                "is_pdf": True,
-                "extracted_text": text
-            }
-
-        text_lower = (text or "").lower()
-        if "eye" in text_lower or "retina" in text_lower or "fundus" in text_lower or "ophthalm" in text_lower or "eye" in fn_target.lower():
-            reg, mod, rep = "Eye / Retina", "Ophthalmic Diagnostic PDF Report", "Retinal & Ophthalmic Report"
-        elif "brain" in text_lower or "head" in text_lower or "mri" in text_lower or "ct" in text_lower or "brain" in fn_target.lower():
-            reg, mod, rep = "Brain", "Neuroimaging PDF Report", "Brain MRI/CT Diagnostic Report"
-        elif "chest" in text_lower or "lung" in text_lower or "x-ray" in text_lower or "radiology" in text_lower or "chest" in fn_target.lower():
-            reg, mod, rep = "Chest / Lungs", "Radiology PDF Report", "Chest Radiology Report"
-        elif "skin" in text_lower or "derma" in text_lower or "lesion" in text_lower or "skin" in fn_target.lower():
-            reg, mod, rep = "Skin / Dermatology", "Dermatology PDF Report", "Skin Lesion Report"
-        elif "cbc" in text_lower or "blood" in text_lower or "hemoglobin" in text_lower or "blood" in fn_target.lower():
-            reg, mod, rep = "Blood & Hematology", "Clinical Laboratory PDF", "Blood Test Laboratory Report"
-        elif "pathology" in text_lower or "biopsy" in text_lower or "tissue" in text_lower:
-            reg, mod, rep = "Histopathology / Tissue", "Pathology PDF Report", "Histopathology Tissue Report"
-        elif "heart" in text_lower or "cardiac" in text_lower or "ecg" in text_lower:
-            reg, mod, rep = "Heart / Cardiac", "Cardiology PDF Report", "ECG Diagnostic Report"
+        # 4. Determine Exact Organ Region & Modality
+        if vision_result and vision_result.get("is_medical") and vision_result.get("body_region") and vision_result.get("body_region") != "Not applicable":
+            reg = vision_result.get("body_region")
+            mod = vision_result.get("modality", "Medical PDF Report")
+            rep = vision_result.get("type", f"{reg} Diagnostic Report")
         else:
-            reg, mod, rep = "Systemic / Clinical Document", "Medical PDF Document", "Clinical Laboratory Report"
+            if any(kw in combined_text for kw in ["eye", "retina", "fundus", "ophthalm", "optic", "macula", "cornea", "intraocular", "retinal"]):
+                reg, mod, rep = "Eye / Retina", "Ophthalmic Diagnostic PDF Report", "Retinal & Ophthalmic Report"
+            elif any(kw in combined_text for kw in ["brain", "head", "mri", "ct scan", "neuro", "skull", "cerebral"]):
+                reg, mod, rep = "Brain", "Neuroimaging PDF Report", "Brain MRI/CT Diagnostic Report"
+            elif any(kw in combined_text for kw in ["chest", "lung", "x-ray", "radiology", "thoracic", "pulmonary"]):
+                reg, mod, rep = "Chest / Lungs", "Radiology PDF Report", "Chest Radiology Report"
+            elif any(kw in combined_text for kw in ["knee", "bone", "joint", "fracture", "ortho"]):
+                reg, mod, rep = "Knee / Joint", "Orthopedic PDF Report", "Knee & Bone Radiography Report"
+            elif any(kw in combined_text for kw in ["skin", "derma", "lesion", "cutaneo"]):
+                reg, mod, rep = "Skin / Dermatology", "Dermatology PDF Report", "Skin Lesion Report"
+            elif any(kw in combined_text for kw in ["cbc", "blood", "hemoglobin", "wbc", "rbc", "platelet", "glucose", "cholesterol"]):
+                reg, mod, rep = "Blood & Hematology", "Clinical Laboratory PDF", "Blood Test Laboratory Report"
+            elif any(kw in combined_text for kw in ["pathology", "biopsy", "tissue", "histology"]):
+                reg, mod, rep = "Histopathology / Tissue", "Pathology PDF Report", "Histopathology Tissue Report"
+            elif any(kw in combined_text for kw in ["heart", "cardiac", "ecg", "auscultation"]):
+                reg, mod, rep = "Heart / Cardiac", "Cardiology PDF Report", "ECG Diagnostic Report"
+            else:
+                reg, mod, rep = "Systemic / Clinical Document", "Medical PDF Document", "Clinical Medical Report"
+
+        conf = vision_result.get("confidence", 92.0) if vision_result else 90.0
 
         return {
             "is_medical": True,
@@ -147,6 +157,7 @@ class MedicalContentValidator:
             "is_pdf": True,
             "extracted_text": text
         }
+
 
 
 

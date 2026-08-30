@@ -1029,8 +1029,10 @@ def detect_medical_image():
         # ----------------------------------------------------
 
         validation = validator.validate_file(
-            filepath
+            filepath,
+            original_filename=file.filename
         )
+
 
 
         # ----------------------------------------------------

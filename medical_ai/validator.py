@@ -18,7 +18,7 @@ class MedicalContentValidator:
         self.image_detector = MedicalImageDetector()
         self.report_processor = MedicalReportProcessor()
 
-    def validate_file(self, file_path):
+    def validate_file(self, file_path, original_filename=None):
         """
         Main validation entry point for uploaded files (Images & PDFs).
         Returns full Stage 1 classification metadata.
@@ -40,12 +40,12 @@ class MedicalContentValidator:
 
         # Check if PDF
         if self.report_processor.is_pdf(file_path):
-            return self._validate_pdf(file_path)
+            return self._validate_pdf(file_path, original_filename=original_filename)
 
         # Image Validation via Vision Classifier
-        return self._validate_image(file_path)
+        return self._validate_image(file_path, original_filename=original_filename)
 
-    def _validate_pdf(self, pdf_path):
+    def _validate_pdf(self, pdf_path, original_filename=None):
         """Validate PDF document for medical report content and extract Stage 1 metadata."""
         text = self.report_processor.extract_text_from_pdf(pdf_path)
         is_medical_text = self.report_processor.contains_medical_content(text)
@@ -129,14 +129,15 @@ class MedicalContentValidator:
             "extracted_text": text
         }
 
-    def _validate_image(self, image_path):
+    def _validate_image(self, image_path, original_filename=None):
         """Validate image file via Stage 1 vision classifier."""
         try:
-            result = self.image_detector.analyze(image_path)
+            result = self.image_detector.analyze(image_path, original_filename=original_filename)
             result["is_pdf"] = False
             result["extracted_text"] = ""
             result["medical_type"] = result["type"]
             return result
+
         except Exception as error:
             print(f"[VALIDATOR] Image validation error: {error}")
             return {

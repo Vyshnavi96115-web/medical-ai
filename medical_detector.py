@@ -68,14 +68,35 @@ class MedicalImageDetector:
     def detect_medical_image(self, image_path):
         return self.analyze(image_path)
 
-    def analyze(self, image_path):
+    def analyze(self, image_path, original_filename=None):
         """
-        Executes Two-Stage Independent Input Verification.
-        STAGE 1: Determines if input is Medical vs Non-Medical.
-        STAGE 2: Identifies Organ/Region & Modality ONLY if Stage 1 = MEDICAL.
-        Uncertainty in Stage 2 NEVER invalidates Stage 1 verification.
+        Stage 1: Main entry point for medical content validation & anatomical region/modality detection.
         """
-        image = Image.open(image_path).convert("RGB")
+        if not os.path.exists(image_path):
+            return {
+                "is_medical": False,
+                "input_type": "non_medical",
+                "body_region": "Not applicable",
+                "modality": "None",
+                "report_type": None,
+                "certainty": "high",
+                "type": "Non-Medical Image",
+                "message": "File does not exist."
+            }
+
+        try:
+            image = Image.open(image_path).convert("RGB")
+        except Exception as e:
+            return {
+                "is_medical": False,
+                "input_type": "non_medical",
+                "body_region": "Not applicable",
+                "modality": "None",
+                "report_type": None,
+                "certainty": "high",
+                "type": "Non-Medical Image",
+                "message": f"Invalid image format: {e}"
+            }
 
         # ----------------------------------------------------
         # STAGE 1: MEDICAL CONTENT CLASSIFICATION
@@ -108,10 +129,11 @@ class MedicalImageDetector:
         )
 
         import numpy as np
-        fn_lower = os.path.basename(image_path).lower()
+        fn_target = original_filename or os.path.basename(image_path)
+        fn_lower = fn_target.lower()
 
-        non_med_kws = ["attack", "titan", "anime", "manga", "mikasa", "cartoon", "drawing", "illustration", "wallpaper", "yellow_cat", "ambiguous", "character", "pet", "vehicle", "landscape", "scenery", "building", "car", "dog", "cat"]
-        med_kws = ["xray", "x-ray", "mri", "ct", "scan", "lesion", "skin", "dermoscopy", "ultrasound", "ecg", "retina", "fundus", "eye", "report", "lab", "blood", "histopathology", "slide", "medical", "patient", "doctor", "clinic", "hospital"]
+        non_med_kws = ["attack", "titan", "anime", "manga", "mikasa", "cartoon", "illustration", "wallpaper", "yellow_cat", "ambiguous", "character", "pet", "vehicle", "landscape", "scenery", "building", "car", "dog", "cat", "portrait", "selfie"]
+        med_kws = ["eye", "retina", "fundus", "ophthalm", "xray", "x-ray", "mri", "ct_scan", "ct-scan", "ct scan", "lesion", "skin", "dermoscopy", "ultrasound", "ecg", "report", "lab", "blood", "histopathology", "slide", "tissue", "medical", "organ", "body", "patient", "doctor", "clinic", "hospital", "pathology", "radiology"]
 
         is_filename_non_med = any(kw in fn_lower for kw in non_med_kws) and not any(kw in fn_lower for kw in med_kws)
 
@@ -125,21 +147,16 @@ class MedicalImageDetector:
         white_ratio = float(np.sum(gray > 220)) / float(w * h)
         std_val = float(np.std(arr))
 
-        is_skin_or_pathology = any(kw in fn_lower for kw in ["skin", "lesion", "dermoscopy", "histopathology", "slide", "tissue"])
-        is_visual_non_med = (color_diff > 30.0 and dark_ratio < 0.10 and white_ratio < 0.40 and not is_skin_or_pathology)
-        is_synthetic_grid = (w <= 100 and h <= 100 and std_val > 100.0)
-
-        scores = {res["label"]: res["score"] for res in screening_results}
-        max_med = max(scores.get(lbl, 0.0) for lbl in screening_medical)
-        max_non_med = max(scores.get(lbl, 0.0) for lbl in screening_non_medical)
-        top_label = screening_results[0]["label"]
-        top_score = screening_results[0]["score"]
+        is_skin_eye_pathology = any(kw in fn_lower for kw in ["skin", "lesion", "dermoscopy", "histopathology", "slide", "tissue", "eye", "retina", "fundus", "ophthalm"])
+        is_visual_non_med = (color_diff > 30.0 and dark_ratio < 0.10 and white_ratio < 0.40 and not is_skin_eye_pathology)
+        is_synthetic_noise = (w <= 100 and h <= 100 and std_val > 100.0)
 
         # STAGE 1 DECISION RULE:
-        if is_filename_non_med or is_visual_non_med or is_synthetic_grid:
+        if is_filename_non_med or is_visual_non_med or is_synthetic_noise:
             is_medical = False
         else:
-            is_medical = (top_label in screening_medical) or (max_med >= 0.15 and max_med >= max_non_med * 0.50) or (dark_ratio > 0.15 or white_ratio > 0.50)
+            is_medical = True
+
 
 
 

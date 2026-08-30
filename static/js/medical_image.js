@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 fileInput.value = "";
                 selectedFile.textContent = "File discarded: Non-medical image";
                 setText("bb84-status", "REJECTED");
-                message(analysisResult, `✕ REJECTED AT UPLOAD STEP: NOT A MEDICAL IMAGE\nStatus: Non-medical file discarded immediately\nMessage: ${result.message || "Please upload a valid medical scan or report."}`, true);
+                message(analysisResult, `✕ NOT A MEDICAL IMAGE\n\nStatus: Upload rejected\nMessage: ${result.message || "Please upload a valid medical scan or medical report."}`, true);
                 hide(operationChoice);
                 hide(encryptionControls);
                 if (chooseEncrypt) chooseEncrypt.disabled = true;
@@ -101,13 +101,22 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (chooseEncrypt) chooseEncrypt.disabled = false;
-            let displayMsg = `✓ MEDICAL CONTENT VERIFIED AT UPLOAD STEP\nFile: ${file.name}\nImage Type: ${result.type}\nModality: ${result.modality || 'Diagnostic Scan'}\nOrgan / Region: ${result.organ || 'Dynamic Medical Imaging'}\nConfidence: ${result.confidence || 'HIGH'}\n\n✓ Ready for quantum encryption`;
+            const organDisplay = result.organ || result.body_region || "Unable to determine reliably";
+            const modalityDisplay = result.modality || "Unable to determine reliably";
+            const confidenceDisplay = result.certainty === "high" ? "HIGH" : (result.certainty === "medium" ? "MEDIUM" : "UNCERTAIN");
+            const statusMessage = (organDisplay === "Unable to determine reliably" || modalityDisplay === "Unable to determine reliably")
+                ? "Valid medical image — ready for quantum encryption"
+                : "Ready for quantum encryption";
+
+            let displayMsg = `✓ MEDICAL CONTENT VERIFIED\n\nFile: ${file.name}\nContent Type: ${result.content_type === "medical_report" ? "Medical Report Document" : "Medical Image"}\nOrgan / Region: ${organDisplay}\nModality: ${modalityDisplay}\nConfidence: ${confidenceDisplay}\n\nStatus: ${statusMessage}`;
+
             message(analysisResult, displayMsg);
             show(operationChoice);
             hide(encryptionControls);
             setText("bb84-status", "READY");
             setStage("upload");
             return true;
+
 
         } catch (error) {
             setText("bb84-status", "ERROR");

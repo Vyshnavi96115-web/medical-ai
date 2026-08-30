@@ -194,26 +194,27 @@
                     <small>QUANTUM CORE</small>
                 </div>
 
-                <div class="network-node node-imaging">
+                <a href="{{ url_for('medical_imaging') }}" class="network-node node-imaging" style="text-decoration:none; color:inherit;">
                     <span>🩻</span>
                     <strong>Imaging</strong>
-                </div>
-                <div class="network-node node-monitoring">
+                </a>
+                <a href="{{ url_for('patient_monitoring') }}" class="network-node node-monitoring" style="text-decoration:none; color:inherit;">
                     <span>❤️</span>
                     <strong>Monitoring</strong>
-                </div>
-                <div class="network-node node-sharing">
+                </a>
+                <a href="{{ url_for('hospital_sharing') }}" class="network-node node-sharing" style="text-decoration:none; color:inherit;">
                     <span>🏥</span>
                     <strong>Sharing</strong>
-                </div>
-                <div class="network-node node-emergency">
+                </a>
+                <a href="{{ url_for('emergency_care') }}" class="network-node node-emergency" style="text-decoration:none; color:inherit;">
                     <span>🚑</span>
                     <strong>Emergency</strong>
-                </div>
-                <div class="network-node node-cloud">
+                </a>
+                <a href="{{ url_for('healthcare_cloud') }}" class="network-node node-cloud" style="text-decoration:none; color:inherit;">
                     <span>☁️</span>
                     <strong>Cloud</strong>
-                </div>
+                </a>
+
             </div>
 
         </section>
@@ -335,7 +336,7 @@
 
             <!-- 5 -->
 
-            <div class="module-card">
+            <a href="{{ url_for('healthcare_cloud') }}" class="module-card module-link">
 
                 <div class="module-number">
                     05
@@ -354,7 +355,8 @@
                     objects securely.
                 </p>
 
-            </div>
+            </a>
+
 
 
         </section>

@@ -152,27 +152,31 @@ class MedGemmaAnalyzer:
         url = self.endpoint_url
         headers = {"Authorization": f"Bearer {self.hf_token}", "Content-Type": "application/json"}
 
-        # Gated / dedicated model + high-capacity medical reasoning endpoints (excluding Gemma 3 as requested)
-        candidate_models = [self.model_name, "meta-llama/Llama-3.3-70B-Instruct", "Qwen/Qwen2.5-72B-Instruct", "deepseek-ai/DeepSeek-V3"]
+        # Multimodal vision models (Qwen2.5-VL-72B-Instruct is active on HF Serverless Router with image_url support)
+        candidate_models = [self.model_name, "Qwen/Qwen2.5-VL-72B-Instruct", "meta-llama/Llama-3.3-70B-Instruct"]
 
         for m_name in candidate_models:
+            is_vision_model = (m_name == self.model_name or "VL" in m_name or "Vision" in m_name)
+            
+            if is_vision_model:
+                user_content = [
+                    {"type": "image_url", "image_url": {"url": data_uri}},
+                    {"type": "text", "text": prompt}
+                ]
+            else:
+                user_content = prompt
+
             payload = {
                 "model": m_name,
                 "messages": [
                     {"role": "system", "content": MEDGEMMA_SYSTEM_PROMPT},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": data_uri}}
-                        ]
-                    } if m_name == self.model_name else {"role": "user", "content": prompt}
+                    {"role": "user", "content": user_content}
                 ],
                 "max_tokens": 800
             }
 
             try:
-                print(f"[MEDGEMMA DEBUG] API request started (Model: {m_name})")
+                print(f"[MEDGEMMA DEBUG] API request started (Model: {m_name}, Vision Payload: {is_vision_model})")
                 resp = requests.post(url, headers=headers, json=payload, timeout=45)
                 print(f"[MEDGEMMA DEBUG] API response status: {resp.status_code}")
 
@@ -186,6 +190,7 @@ class MedGemmaAnalyzer:
                     print(f"[MEDGEMMA DEBUG] Notice for {m_name} ({resp.status_code}): {resp.text[:120]}")
             except Exception as err:
                 print(f"[MEDGEMMA DEBUG] Notice for {m_name}: {err}")
+
 
         return self._generate_error_response("MedGemma inference is currently unavailable.", stage1_info)
 

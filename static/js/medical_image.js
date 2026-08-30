@@ -67,11 +67,64 @@ document.addEventListener("DOMContentLoaded", () => {
     const pdfViewContainer = document.getElementById("pdf-view-container");
     const pdfDownloadLink = document.getElementById("pdf-download-link");
 
-    fileInput?.addEventListener("change", () => {
+    async function verifyAndFilterUploadedFile() {
+        if (!fileInput || !fileInput.files.length) return;
+
+        const file = fileInput.files[0];
+        if (analyzeButton) {
+            analyzeButton.disabled = true;
+            analyzeButton.textContent = "Verifying Medical Content...";
+        }
+        setText("bb84-status", "VERIFYING");
+        message(analysisResult, "Verifying uploaded file content at initial upload step...");
+        hide(aiContainer);
+        hide(operationChoice);
+        hide(encryptionControls);
+        hide(decryptionPanel);
+
+        try {
+            const formData = new FormData();
+            formData.append("medical_image", file);
+            const response = await fetch("/api/detect-medical-image", { method: "POST", body: formData });
+            const result = await response.json();
+
+            if (!response.ok || !result.success || !result.is_medical || result.medical_verified === false) {
+                // DISCARD NON-MEDICAL FILE IMMEDIATELY AT UPLOAD STEP
+                fileInput.value = "";
+                selectedFile.textContent = "File discarded: Non-medical image";
+                setText("bb84-status", "REJECTED");
+                message(analysisResult, `✕ REJECTED AT UPLOAD STEP: NOT A MEDICAL IMAGE\nStatus: Non-medical file discarded immediately\nMessage: ${result.message || "Please upload a valid medical scan or report."}`, true);
+                hide(operationChoice);
+                hide(encryptionControls);
+                if (chooseEncrypt) chooseEncrypt.disabled = true;
+                return false;
+            }
+
+            if (chooseEncrypt) chooseEncrypt.disabled = false;
+            let displayMsg = `✓ MEDICAL CONTENT VERIFIED AT UPLOAD STEP\nFile: ${file.name}\nImage Type: ${result.type}\nModality: ${result.modality || 'Diagnostic Scan'}\nOrgan / Region: ${result.organ || 'Dynamic Medical Imaging'}\nConfidence: ${result.confidence || 'HIGH'}\n\n✓ Ready for quantum encryption`;
+            message(analysisResult, displayMsg);
+            show(operationChoice);
+            hide(encryptionControls);
+            setText("bb84-status", "READY");
+            setStage("upload");
+            return true;
+
+        } catch (error) {
+            setText("bb84-status", "ERROR");
+            message(analysisResult, error.message || "Failed to verify medical content.", true);
+            return false;
+        } finally {
+            if (analyzeButton) {
+                analyzeButton.disabled = false;
+                analyzeButton.textContent = "🔍 Re-verify Uploaded File";
+            }
+        }
+    }
+
+    fileInput?.addEventListener("change", async () => {
         const hasFile = fileInput.files && fileInput.files.length > 0;
         generatedKey = "";
         selectedFile.textContent = hasFile ? `Selected: ${fileInput.files[0].name}` : "No file selected";
-        analyzeButton.disabled = !hasFile;
         hide(encryptionControls);
         hide(decryptionPanel);
         hide(imageContainer);
@@ -80,48 +133,17 @@ document.addEventListener("DOMContentLoaded", () => {
         hide(aiContainer);
         hide(pdfViewContainer);
         setStage("upload");
+
+        if (hasFile) {
+            await verifyAndFilterUploadedFile();
+        }
     });
 
     analyzeButton?.addEventListener("click", async () => {
         if (!fileInput.files.length) return;
-        analyzeButton.disabled = true;
-        analyzeButton.textContent = "Analyzing Medical Content...";
-        setText("bb84-status", "ANALYZING");
-        message(analysisResult, "AI is analyzing the uploaded medical scan or report...");
-        hide(aiContainer);
-
-        try {
-            const formData = new FormData();
-            formData.append("medical_image", fileInput.files[0]);
-            const response = await fetch("/api/detect-medical-image", { method: "POST", body: formData });
-            const result = await response.json();
-            if (!response.ok || !result.success) throw new Error(result.message || "Analysis failed.");
-
-            if (!result.is_medical || result.medical_verified === false) {
-                setText("bb84-status", "REJECTED");
-                message(analysisResult, `✕ NOT A MEDICAL IMAGE\nStatus: Upload rejected\nPlease upload a valid medical image or medical report.`, true);
-                hide(operationChoice);
-                hide(encryptionControls);
-                if (chooseEncrypt) chooseEncrypt.disabled = true;
-                return;
-            }
-
-            if (chooseEncrypt) chooseEncrypt.disabled = false;
-            let displayMsg = `✓ MEDICAL CONTENT VERIFIED\nImage Type: ${result.type}\nModality: ${result.modality || 'Diagnostic Scan'}\nOrgan / Region: ${result.organ || 'Dynamic Medical Imaging'}\nConfidence: ${result.confidence || 'HIGH'}\n\n✓ Ready for quantum encryption`;
-            message(analysisResult, displayMsg);
-            show(operationChoice);
-            hide(encryptionControls);
-            setText("bb84-status", "READY");
-            setStage("upload");
-
-        } catch (error) {
-            setText("bb84-status", "ERROR");
-            message(analysisResult, error.message, true);
-        } finally {
-            analyzeButton.disabled = false;
-            analyzeButton.textContent = "🔍 Analyze Medical Image / Report";
-        }
+        await verifyAndFilterUploadedFile();
     });
+
 
     chooseEncrypt?.addEventListener("click", () => {
         hide(operationChoice);

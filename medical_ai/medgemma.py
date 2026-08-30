@@ -99,7 +99,14 @@ class MedGemmaAnalyzer:
                         conf = float(data.get("confidence", 95.0))
                         reason = data.get("reason", f"MedGemma verified {media_type} as {state}.")
                         print(f"[MEDGEMMA VERIFICATION] API Result ({m_name}): State={state}, Confidence={conf}%")
-                        return {"state": state, "confidence": conf, "reason": reason}
+                        return {
+                            "state": state,
+                            "confidence": conf,
+                            "reason": reason,
+                            "organ_or_region": data.get("organ_or_region"),
+                            "document_type": data.get("document_type")
+                        }
+
             except Exception as err:
                 print(f"[MEDGEMMA VERIFICATION] API verification notice: {err}")
 

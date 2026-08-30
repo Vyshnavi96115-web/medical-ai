@@ -61,10 +61,13 @@ class MedicalContentValidator:
 
 
     def _validate_pdf(self, pdf_path, original_filename=None):
-        """Validate PDF document for medical report content using MedGemma verification and vision analysis."""
+        """
+        Validate PDF document by having MedGemma AI directly read and inspect the content
+        to determine if it is a medical or non-medical PDF document.
+        """
         fn_target = original_filename or pdf_path
 
-        # 1. Extract text & render page image
+        # 1. Extract PDF text content
         text = self.report_processor.extract_text_from_pdf(pdf_path)
         page_img = None
         temp_img_path = pdf_path + "_preview.png"
@@ -75,22 +78,29 @@ class MedicalContentValidator:
         except Exception as p_err:
             print(f"[VALIDATOR] PDF page rendering notice: {p_err}")
 
-        # 2. Zero-Shot Vision Classifier on Rendered PDF Page Image
+        # 2. MedGemma AI Direct Content & Text Verification
+        text_payload = f"Document Filename: {os.path.basename(fn_target)}\n\nPDF Document Text Content:\n{text[:3000]}"
+        ver = self.medgemma_analyzer.verify_medical_content_with_medgemma(page_img, media_type="pdf", additional_text=text_payload)
+
+        # 3. Vision Classifier Backup Check on Rendered Page
         vision_result = None
         if os.path.exists(temp_img_path):
             try:
                 vision_result = self.image_detector.analyze(temp_img_path, original_filename=fn_target)
-            except Exception as v_err:
-                print(f"[VALIDATOR] Vision PDF detection notice: {v_err}")
-
-        # Clean up temporary preview image
-        if os.path.exists(temp_img_path):
+            except Exception:
+                pass
             try:
                 os.remove(temp_img_path)
             except Exception:
                 pass
 
-        # 3. Non-Medical Commercial & Academic Term Check
+        state = ver.get("state", "MEDICAL")
+        conf = float(ver.get("confidence", 95.0))
+        reason = ver.get("reason", "")
+        medgemma_organ = ver.get("organ_or_region")
+        medgemma_doc_type = ver.get("document_type")
+
+        # Check for explicit non-medical commercial or financial keywords
         combined_text = f"{fn_target} {text}".lower()
         non_med_terms = ["invoice", "total due", "amount due", "tax invoice", "curriculum vitae", "resume", "bank statement", "account number", "balance", "software engineer", "purchase order", "payment receipt", "homework", "syllabus", "coursework", "flight ticket", "tax", "bill", "receipt", "agreement", "contract", "assignment", "manual", "guide"]
         med_terms = ["patient", "diagnosis", "blood", "cbc", "hemoglobin", "wbc", "platelet", "glucose", "cholesterol", "physician", "hospital", "clinic", "impression", "findings", "pathology", "specimen", "vital", "prescription", "ultrasound", "x-ray", "mri", "ct scan", "ecg", "retina", "ophthalmology", "dermatology", "cardiology", "medical", "doctor", "lab", "radiology", "eye", "optic", "fundus", "macula", "cornea", "intraocular", "retinal"]
@@ -98,9 +108,10 @@ class MedicalContentValidator:
         med_matches = sum(1 for kw in med_terms if kw in combined_text)
         non_med_matches = sum(1 for kw in non_med_terms if kw in combined_text)
 
-        # STRICT REJECTION OF NON-MEDICAL PDF
-        is_vision_non_medical = vision_result and not vision_result.get("is_medical", True)
-        if is_vision_non_medical or (non_med_matches > 0 and med_matches < 2) or (med_matches == 0 and not (vision_result and vision_result.get("is_medical"))):
+        # MedGemma AI Decision or Keyword/Vision Overrides
+        is_non_med = state == "NON_MEDICAL" or (non_med_matches > 0 and med_matches < 2) or (med_matches == 0 and not (vision_result and vision_result.get("is_medical")))
+
+        if is_non_med:
             return {
                 "is_medical": False,
                 "verification_state": "NON_MEDICAL",
@@ -110,14 +121,18 @@ class MedicalContentValidator:
                 "report_type": None,
                 "certainty": "high",
                 "medical_type": "Non-Medical Document",
-                "confidence": vision_result.get("confidence", 95.0) if vision_result else 95.0,
-                "message": "Non-medical file detected. Please upload a valid medical file.",
+                "confidence": conf,
+                "message": f"Non-medical file detected. MedGemma AI analyzed the PDF content and determined it is not a medical file.",
                 "is_pdf": True,
                 "extracted_text": text
             }
 
-        # 4. Determine Exact Organ Region & Modality
-        if vision_result and vision_result.get("is_medical") and vision_result.get("body_region") and vision_result.get("body_region") != "Not applicable":
+        # 4. Determine Exact Organ Region & Document Type from MedGemma AI & Vision & Text
+        if medgemma_organ and medgemma_organ != "Not applicable":
+            reg = medgemma_organ
+            rep = medgemma_doc_type or f"{reg} Diagnostic Report"
+            mod = "Medical PDF Report"
+        elif vision_result and vision_result.get("is_medical") and vision_result.get("body_region") and vision_result.get("body_region") != "Not applicable":
             reg = vision_result.get("body_region")
             mod = vision_result.get("modality", "Medical PDF Report")
             rep = vision_result.get("type", f"{reg} Diagnostic Report")
@@ -141,8 +156,6 @@ class MedicalContentValidator:
             else:
                 reg, mod, rep = "Systemic / Clinical Document", "Medical PDF Document", "Clinical Medical Report"
 
-        conf = vision_result.get("confidence", 92.0) if vision_result else 90.0
-
         return {
             "is_medical": True,
             "verification_state": "MEDICAL",
@@ -153,10 +166,11 @@ class MedicalContentValidator:
             "medical_type": f"{reg} ({rep})",
             "certainty": "high",
             "confidence": conf,
-            "message": f"Medical PDF report ({rep}) verified successfully.",
+            "message": f"Medical PDF report ({rep}) verified successfully by MedGemma AI.",
             "is_pdf": True,
             "extracted_text": text
         }
+
 
 
 

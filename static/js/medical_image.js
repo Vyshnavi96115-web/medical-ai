@@ -220,12 +220,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 show(imageContainer);
             }
 
+            if (result.audio_url) {
+                let audioElem = document.getElementById("decrypted-audio-player");
+                if (!audioElem) {
+                    audioElem = document.createElement("audio");
+                    audioElem.id = "decrypted-audio-player";
+                    audioElem.controls = true;
+                    audioElem.style.width = "100%";
+                    audioElem.style.marginTop = "1rem";
+                    imageContainer.parentNode.insertBefore(audioElem, imageContainer.nextSibling);
+                }
+                audioElem.src = `${result.audio_url}?t=${Date.now()}`;
+                audioElem.style.display = "block";
+            }
+
+            if (result.video_url) {
+                let videoElem = document.getElementById("decrypted-video-player");
+                if (!videoElem) {
+                    videoElem = document.createElement("video");
+                    videoElem.id = "decrypted-video-player";
+                    videoElem.controls = true;
+                    videoElem.style.width = "100%";
+                    videoElem.style.borderRadius = "8px";
+                    videoElem.style.marginTop = "1rem";
+                    imageContainer.parentNode.insertBefore(videoElem, imageContainer.nextSibling);
+                }
+                videoElem.src = `${result.video_url}?t=${Date.now()}`;
+                videoElem.style.display = "block";
+            }
+
             if (result.pdf_url && pdfDownloadLink) {
                 pdfDownloadLink.href = result.pdf_url;
                 show(pdfViewContainer);
             }
 
             message(decryptionMessage, result.message, !result.decrypted);
+
 
             // Populate MedGemma AI Analysis ONLY if decryption was successful and channel is secure
             if (result.decrypted && !result.corrupted && result.ai_analysis) {

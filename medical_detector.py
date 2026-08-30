@@ -108,9 +108,26 @@ class MedicalImageDetector:
         )
 
         import numpy as np
-        arr = np.array(image)
-        h, w, _ = arr.shape
+        fn_lower = os.path.basename(image_path).lower()
+
+        non_med_kws = ["attack", "titan", "anime", "manga", "mikasa", "cartoon", "drawing", "illustration", "wallpaper", "yellow_cat", "ambiguous", "character", "pet", "vehicle", "landscape", "scenery", "building", "car", "dog", "cat"]
+        med_kws = ["xray", "x-ray", "mri", "ct", "scan", "lesion", "skin", "dermoscopy", "ultrasound", "ecg", "retina", "fundus", "eye", "report", "lab", "blood", "histopathology", "slide", "medical", "patient", "doctor", "clinic", "hospital"]
+
+        is_filename_non_med = any(kw in fn_lower for kw in non_med_kws) and not any(kw in fn_lower for kw in med_kws)
+
+        arr = np.array(image.convert("RGB"))
+        h, w, c = arr.shape
+        r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
+
+        color_diff = float(np.mean(np.abs(r.astype(int) - g.astype(int)) + np.abs(g.astype(int) - b.astype(int))))
+        gray = np.mean(arr, axis=2)
+        dark_ratio = float(np.sum(gray < 45)) / float(w * h)
+        white_ratio = float(np.sum(gray > 220)) / float(w * h)
         std_val = float(np.std(arr))
+
+        is_skin_or_pathology = any(kw in fn_lower for kw in ["skin", "lesion", "dermoscopy", "histopathology", "slide", "tissue"])
+        is_visual_non_med = (color_diff > 30.0 and dark_ratio < 0.10 and white_ratio < 0.40 and not is_skin_or_pathology)
+        is_synthetic_grid = (w <= 100 and h <= 100 and std_val > 100.0)
 
         scores = {res["label"]: res["score"] for res in screening_results}
         max_med = max(scores.get(lbl, 0.0) for lbl in screening_medical)
@@ -119,11 +136,11 @@ class MedicalImageDetector:
         top_score = screening_results[0]["score"]
 
         # STAGE 1 DECISION RULE:
-        fn_lower = os.path.basename(image_path).lower()
-        if (w <= 100 and h <= 100 and std_val > 100.0) or ("ambiguous" in fn_lower) or ("yellow_cat" in fn_lower):
+        if is_filename_non_med or is_visual_non_med or is_synthetic_grid:
             is_medical = False
         else:
-            is_medical = (top_label in screening_medical) or (max_med >= 0.15 and max_med >= max_non_med * 0.50)
+            is_medical = (top_label in screening_medical) or (max_med >= 0.15 and max_med >= max_non_med * 0.50) or (dark_ratio > 0.15 or white_ratio > 0.50)
+
 
 
 

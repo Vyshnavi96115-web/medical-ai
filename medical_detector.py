@@ -358,16 +358,25 @@ class MedicalImageDetector:
             except Exception as a_err:
                 print(f"[STAGE 1 DETECTOR] Zero-shot anatomy notice: {a_err}")
 
-        # If anatomy is STILL unconfirmed, inspect image visual structure (aspect ratio, dark bone ratio)
+        # If anatomy is STILL unconfirmed (e.g. lightweight mode without PyTorch), inspect visual structure
         if reg is None:
-            # Check aspect ratio & contrast for leg/arm long-bone scans vs square chest/brain scans
             aspect = float(h) / float(w) if w > 0 else 1.0
-            if aspect > 1.25 and dark_ratio > 0.45:
-                reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
+            # Grayscale diagnostic radiograph check
+            is_grayscale_xray = (color_diff < 18.0)
+
+            if is_grayscale_xray:
+                # Extremity scans (foot, ankle, leg, hand, wrist):
+                # Either tall single view (aspect > 1.20) or wide dual side-by-side panel view (aspect < 0.85 e.g. 1232x752)
+                # with high background dark ratio (dark_ratio > 0.35)
+                if dark_ratio > 0.35 and (aspect > 1.20 or aspect < 0.85 or dark_ratio > 0.45):
+                    reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
+                elif dark_ratio < 0.35 and 0.85 <= aspect <= 1.20:
+                    reg, mod = "Chest / Lungs", "X-Ray / Radiograph"
+                else:
+                    reg, mod = "Lower Extremity / Leg", "X-Ray / Radiograph"
             elif color_diff < 15.0 and dark_ratio > 0.50:
                 reg, mod = "Other Medical Anatomy", "Diagnostic Scan"
             else:
-                # NEVER default to Chest / Lungs! Mark as UNCLEAR if evidence is insufficient
                 return {
                     "is_medical": False,
                     "verification_state": "UNCLEAR",
@@ -380,6 +389,7 @@ class MedicalImageDetector:
                     "type": "Unclear Medical Image",
                     "message": "Unable to verify the anatomical region of this medical image. Please upload a clearer medical image."
                 }
+
 
         return {
             "is_medical": True,
